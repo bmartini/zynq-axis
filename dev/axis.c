@@ -28,6 +28,7 @@ struct axis_platdata {
 	spinlock_t lock;
 	unsigned long flags;
 	struct platform_device *pdev;
+	int iomem_nb;
 };
 
 /* Bits in axis_platdata.flags */
@@ -93,7 +94,7 @@ static int axis_probe(struct platform_device *pdev)
 	struct axis_platdata *priv;
 	struct uio_mem *uiomem;
 	int ret = -EINVAL;
-	int nb_mem = 0;
+	int iomem_nb = 0;
 	int i;
 
 	if (pdev->dev.of_node) {
@@ -171,9 +172,10 @@ static int axis_probe(struct platform_device *pdev)
 			}
 		}
 
-		++nb_mem;
+		++iomem_nb;
 		++uiomem;
 	}
+	priv->iomem_nb = iomem_nb;
 
 	while (uiomem < &uioinfo->mem[MAX_UIO_MAPS]) {
 		uiomem->size = 0;
@@ -205,7 +207,7 @@ static int axis_probe(struct platform_device *pdev)
 	return 0;
  bad0:
 	uiomem = &uioinfo->mem[0];
-	for (i = 0; i < nb_mem; ++i) {
+	for (i = 0; i < iomem_nb; ++i) {
 		if (uiomem->size != 0) {
 			release_mem_region(uiomem->addr, uiomem->size);
 		}
@@ -218,9 +220,10 @@ static int axis_remove(struct platform_device *pdev)
 {
 	struct axis_platdata *priv = platform_get_drvdata(pdev);
 	struct uio_mem *uiomem;
+	int i;
 
 	uiomem = &priv->uioinfo->mem[0];
-	while (uiomem < &priv->uioinfo->mem[MAX_UIO_MAPS]) {
+	for (i = 0; i < priv->iomem_nb; ++i) {
 		if (uiomem->size != 0) {
 			release_mem_region(uiomem->addr, uiomem->size);
 		}
