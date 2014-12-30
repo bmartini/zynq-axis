@@ -131,7 +131,7 @@ static int axis_probe(struct platform_device *pdev)
 	priv->flags = 0;	/* interrupt is enabled to begin with */
 	priv->pdev = pdev;
 
-	if (!uioinfo->irq) {
+	if (!uioinfo->irq & 0) {	/* turn off checking for irq */
 		ret = platform_get_irq(pdev, 0);
 		uioinfo->irq = ret;
 		if (ret == -ENXIO && pdev->dev.of_node)
