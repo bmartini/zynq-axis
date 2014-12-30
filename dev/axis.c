@@ -89,7 +89,7 @@ static int axis_irqcontrol(struct uio_info *dev_info, s32 irq_on)
 
 static int axis_probe(struct platform_device *pdev)
 {
-	struct uio_info *uioinfo = pdev->dev.platform_data;
+	struct uio_info *uioinfo = dev_get_platdata(&pdev->dev);
 	struct axis_platdata *priv;
 	struct uio_mem *uiomem;
 	int ret = -EINVAL;
