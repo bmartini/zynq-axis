@@ -16,12 +16,14 @@
 #include <linux/interrupt.h>
 #include <linux/stringify.h>
 #include <linux/slab.h>
+#include <linux/dma-mapping.h>
 
 #include <linux/of.h>
 #include <linux/of_platform.h>
 #include <linux/of_address.h>
 
 #define DRIVER_NAME "axis"
+#define CMA_SIZE (63*1024*1024)
 
 struct axis_platdata {
 	struct uio_info *uioinfo;
@@ -29,6 +31,8 @@ struct axis_platdata {
 	unsigned long flags;
 	struct platform_device *pdev;
 	int iomem_nb;
+	char *cma_addr;
+	dma_addr_t cma_handle;
 };
 
 /* Bits in axis_platdata.flags */
@@ -177,6 +181,31 @@ static int axis_probe(struct platform_device *pdev)
 	}
 	priv->iomem_nb = iomem_nb;
 
+	/* needs a free mem array position for CMA */
+	if (uiomem >= &uioinfo->mem[MAX_UIO_MAPS]) {
+		dev_err(&pdev->dev, "device has more than "
+			__stringify(MAX_UIO_MAPS)
+			" CMA and fixed memory regions.\n");
+		ret = -EBUSY;
+		goto bad0;
+	}
+
+	/* allocate CMA mmap area */
+	priv->cma_addr = dma_zalloc_coherent(NULL, CMA_SIZE, &priv->cma_handle, GFP_KERNEL);
+	if (!priv->cma_addr) {
+		dev_err(&pdev->dev,
+			"allocating CMA memory failed. Aborting.\n");
+
+		ret = -ENOMEM;
+		goto bad0;
+	}
+	uiomem->memtype = UIO_MEM_PHYS;
+	uiomem->addr = (int) virt_to_phys(priv->cma_addr);
+	uiomem->size = CMA_SIZE;
+	uiomem->name = "cma";
+	++uiomem;
+
+	/* mark remainder uiomem struct as empty */
 	while (uiomem < &uioinfo->mem[MAX_UIO_MAPS]) {
 		uiomem->size = 0;
 		++uiomem;
@@ -222,12 +251,18 @@ static int axis_remove(struct platform_device *pdev)
 	struct uio_mem *uiomem;
 	int i;
 
+	/* free I/O memory areas */
 	uiomem = &priv->uioinfo->mem[0];
 	for (i = 0; i < priv->iomem_nb; ++i) {
 		if (uiomem->size != 0) {
 			release_mem_region(uiomem->addr, uiomem->size);
 		}
 		++uiomem;
+	}
+
+	/* free CMA mmap area */
+	if (priv->cma_addr) {
+		dma_free_coherent(NULL, CMA_SIZE, priv->cma_addr, priv->cma_handle);
 	}
 
 	uio_unregister_device(priv->uioinfo);
@@ -240,7 +275,7 @@ static int axis_remove(struct platform_device *pdev)
 
 static const struct of_device_id axis_of_match[] = {
 	{.compatible = "xlnx,axis-1.00",},
-	{ /* empty for now */ },
+	{ /* Sentinel */ },
 };
 
 MODULE_DEVICE_TABLE(of, axis_of_match);
