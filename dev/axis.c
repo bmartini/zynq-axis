@@ -30,6 +30,21 @@ struct axis_platdata {
 	struct platform_device *pdev;
 };
 
+/* Bits in axis_platdata.flags */
+enum {
+	UIO_IRQ_DISABLED = 0,
+};
+
+static int axis_open(struct uio_info *info, struct inode *inode)
+{
+	return 0;
+}
+
+static int axis_release(struct uio_info *info, struct inode *inode)
+{
+	return 0;
+}
+
 static irqreturn_t axis_handler(int irq, struct uio_info *dev_info)
 {
 	struct axis_platdata *priv = dev_info->priv;
@@ -38,8 +53,10 @@ static irqreturn_t axis_handler(int irq, struct uio_info *dev_info)
 	 * remember the state so we can allow user space to enable it later.
 	 */
 
-	if (!test_and_set_bit(0, &priv->flags))
+	spin_lock(&priv->lock);
+	if (!__test_and_set_bit(UIO_IRQ_DISABLED, &priv->flags))
 		disable_irq_nosync(irq);
+	spin_unlock(&priv->lock);
 
 	return IRQ_HANDLED;
 }
@@ -53,16 +70,17 @@ static int axis_irqcontrol(struct uio_info *dev_info, s32 irq_on)
 	 * in the interrupt controller, but keep track of the
 	 * state to prevent per-irq depth damage.
 	 *
-	 * Serialize this operation to support multiple tasks.
+	 * Serialize this operation to support multiple tasks and concurrency
+	 * with irq handler on SMP systems.
 	 */
 
 	spin_lock_irqsave(&priv->lock, flags);
 	if (irq_on) {
-		if (test_and_clear_bit(0, &priv->flags))
+		if (__test_and_clear_bit(UIO_IRQ_DISABLED, &priv->flags))
 			enable_irq(dev_info->irq);
 	} else {
-		if (!test_and_set_bit(0, &priv->flags))
-			disable_irq(dev_info->irq);
+		if (!__test_and_set_bit(UIO_IRQ_DISABLED, &priv->flags))
+			disable_irq_nosync(dev_info->irq);
 	}
 	spin_unlock_irqrestore(&priv->lock, flags);
 
@@ -113,6 +131,17 @@ static int axis_probe(struct platform_device *pdev)
 	priv->flags = 0;	/* interrupt is enabled to begin with */
 	priv->pdev = pdev;
 
+	if (!uioinfo->irq) {
+		ret = platform_get_irq(pdev, 0);
+		uioinfo->irq = ret;
+		if (ret == -ENXIO && pdev->dev.of_node)
+			uioinfo->irq = UIO_IRQ_NONE;
+		else if (ret < 0) {
+			dev_err(&pdev->dev, "failed to get IRQ\n");
+			return ret;
+		}
+	}
+
 	uiomem = &uioinfo->mem[0];
 
 	for (i = 0; i < pdev->num_resources; ++i) {
@@ -161,13 +190,10 @@ static int axis_probe(struct platform_device *pdev)
 	 * Interrupt sharing is not supported.
 	 */
 
-	ret = platform_get_irq(pdev, 0);
-	if (ret >= 0) {
-		uioinfo->irq = ret;
-		uioinfo->handler = axis_handler;
-		uioinfo->irqcontrol = axis_irqcontrol;
-	}
-
+	uioinfo->handler = axis_handler;
+	uioinfo->irqcontrol = axis_irqcontrol;
+	uioinfo->open = axis_open;
+	uioinfo->release = axis_release;
 	uioinfo->priv = priv;
 
 	ret = uio_register_device(&pdev->dev, priv->uioinfo);
