@@ -33,3 +33,17 @@ int axis_exit()
 
 	return 0;
 }
+
+void cfg_write(unsigned int addr, unsigned int data)
+{
+	volatile unsigned int *reg = ((volatile unsigned int *)cfg) + addr;
+
+	*reg = data;
+}
+
+int cfg_read(unsigned int addr)
+{
+	volatile unsigned int *reg = ((volatile unsigned int *)cfg) + addr;
+
+	return *reg;
+}
