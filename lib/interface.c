@@ -4,6 +4,7 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <unistd.h>
+#include <stdio.h>
 
 static void *cfg;
 
@@ -17,7 +18,17 @@ int axis_init(const char *path)
 
 	close(fd);
 	if (cfg == MAP_FAILED) {
-		return -1;	// failure
+		return -1;
+	}
+
+	return 0;
+}
+
+int axis_exit()
+{
+	if (munmap(cfg, REGISTER_NB) != 0) {
+		perror("Error un-mmapping the axis cfg");
+		return -1;
 	}
 
 	return 0;

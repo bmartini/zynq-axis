@@ -9,6 +9,8 @@ extern "C" {
 
 	int axis_init(const char *path);
 
+	int axis_exit();
+
 #ifdef __cplusplus
 }
 #endif
