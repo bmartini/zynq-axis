@@ -1,0 +1,106 @@
+#!/bin/bash
+set -o errexit
+
+
+function print_usage() {
+	echo "
+Usage: $0 [OPTION]
+
+Description: Prepare project build directories for use in scratch.
+
+Options:
+ -c	Copy Verilog source code and 3rd party IP to an already existing
+	syn/scratch/ directory. Perform no other functions.
+
+ -h	Print this help info.
+
+ -l	Symbolically link project files into the scratch dir instead of copying
+	them. Any changes to these file during building will thus be propagated
+	back into the repo.
+
+ -L	Symbolically link project directory into the scratch instead of copying
+	it. This takes precedents over the '-l'.
+"
+}
+
+function copy_for_synth() {
+	test -d syn/scratch/src || { echo "ERROR: directory 'syn/scratch/src' not found" ; exit 1; }
+
+	# copy verilog code files from hdl directory into syn work dir
+	for FILE in $(find ./hdl/ -name "*.v" -type f -print)
+	do
+		cp -n $FILE ./syn/scratch/src/ || { echo "ERROR duplicate filename ${FILE}" ; exit 1; }
+	done
+
+	# copy verilog header files from hdl directory into syn work dir
+	for FILE in $(find ./hdl/ -name "*.vh" -type f -print)
+	do
+		cp -n $FILE ./syn/scratch/src/ || { echo "ERROR duplicate filename ${FILE}" ; exit 1; }
+	done
+
+	# copy SystemVerilog code files from hdl directory into syn work dir
+	for FILE in $(find ./hdl/ -name "*.sv" -type f -print)
+	do
+		cp -n $FILE ./syn/scratch/src/ || { echo "ERROR duplicate filename ${FILE}" ; exit 1; }
+	done
+
+
+	# copy 3rd party IP into syn work dir
+	test -d ip/* && { cp -r ip/* syn/scratch/; }
+
+	echo "Source files copied to scratch directory"
+}
+
+
+flag_l=
+flag_L=
+
+# command line options
+while getopts "chlL" flag
+do
+	case "$flag" in
+		c) copy_for_synth; exit 0;;
+		L) flag_L=1;;
+		l) flag_l=1;;
+		h) print_usage; exit 2;;
+		?) print_usage; exit 2;;
+	esac
+done
+
+
+# create syn scratch work directory
+test -d syn/scratch && rm -rf syn/scratch
+mkdir -p syn/scratch/src
+
+# copy verilog code and IP into syn work dir
+copy_for_synth
+
+# create syn project for use in syn work dir
+cd syn
+
+# create build directories
+if [ ! -z "$flag_L" ]; then
+	# link directories
+	for DIR in $(find project-* -maxdepth 0 -type d)
+	do
+		ln -s "${PWD}/$DIR" "scratch/$DIR"
+	done
+elif [ ! -z "$flag_l" ]; then
+	# create directories but link files
+	for DIR in $(find project-*/ -type d)
+	do
+		mkdir -p "scratch/$DIR"
+	done
+
+	# populate with links to files
+	for FILE in $(find project-*/ -type f)
+	do
+		ln -s "${PWD}/$FILE" "scratch/$FILE"
+	done
+else
+	# copy directories
+	for DIR in $(find project-* -maxdepth 0 -type d)
+	do
+		cp -r "$DIR" "scratch/$DIR"
+	done
+fi
