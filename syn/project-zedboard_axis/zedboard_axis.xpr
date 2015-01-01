@@ -22,9 +22,23 @@
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
+        <CompFileExtendedInfo CompFileName="system.bd" FileRelPathName="ip/system_axi_interconnect_0_0/system_axi_interconnect_0_0.xci"/>
+        <CompFileExtendedInfo CompFileName="system.bd" FileRelPathName="ip/system_ps7_0/system_ps7_0.xci"/>
+        <CompFileExtendedInfo CompFileName="system.bd" FileRelPathName="ip/system_auto_pc_0/system_auto_pc_0.xci"/>
+        <CompFileExtendedInfo CompFileName="system.bd" FileRelPathName="system_ooc.xdc"/>
+        <CompFileExtendedInfo CompFileName="system.bd" FileRelPathName="hdl/system.v"/>
+        <CompFileExtendedInfo CompFileName="system.bd" FileRelPathName="hw_handoff/system.hwh"/>
+      </File>
+      <File Path="$PSRCDIR/sources_1/bd/system/hdl/system_wrapper.v">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
       </File>
       <Config>
         <Option Name="DesignMode" Val="RTL"/>
+        <Option Name="TopModule" Val="system_wrapper"/>
         <Option Name="TopAutoSet" Val="TRUE"/>
       </Config>
     </FileSet>
@@ -35,8 +49,11 @@
       </Config>
     </FileSet>
     <FileSet Name="sim_1" Type="SimulationSrcs" RelSrcDir="$PSRCDIR/sim_1">
+      <Filter Type="Srcs"/>
       <Config>
         <Option Name="DesignMode" Val="RTL"/>
+        <Option Name="TopModule" Val="system_wrapper"/>
+        <Option Name="TopLib" Val="xil_defaultlib"/>
         <Option Name="TopAutoSet" Val="TRUE"/>
         <Option Name="SrcSet" Val="sources_1"/>
       </Config>
