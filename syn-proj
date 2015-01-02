@@ -1,0 +1,86 @@
+#!/bin/bash
+set -o errexit
+
+
+function print_usage() {
+	echo "
+Usage: $0 [OPTION] [project-name]
+
+Description: Synthesize a project in scratch & produce bitfile.
+
+Options:
+ -h	Print this help info.
+
+ -s	Synthesize only. Assumes that the 'syn-proj-prep' script has already
+	been run.
+
+Argument:
+	The 'project-name' is an optional argument that will select which
+	project to synthesize. Without the argument the default
+	project-zedboard-conv' is used.
+"
+}
+
+
+flag_s=
+
+# command line options
+while getopts "hs" flag
+do
+	case "$flag" in
+		s) flag_s=1;;
+		h) print_usage; exit 2;;
+		?) print_usage; exit 2;;
+	esac
+done
+
+
+# default project selection
+PROJ='project-zedboard_axis'
+
+
+# sanitise project argument
+shift $(($OPTIND - 1))
+if [ $# -gt 1 ]
+then :
+	echo "ERROR: To many arguments"
+	exit 1
+elif [ ! -d  "syn/$@" ]
+then :
+	echo "ERROR: Project not found"
+	exit 1
+fi
+
+
+# assign project if given as argument
+if [[ ! -z "$@" && "$@" != "$PROJ" ]]
+then :
+	PROJ=$@
+fi
+
+
+# prep for project syntheses
+if [ -z "$flag_s" ]
+then :
+	./syn-proj-prep
+fi
+
+if [ ! -d syn/scratch ]
+then :
+	echo "ERROR: No 'syn/scratch' directory found"
+	exit 1
+fi
+
+
+if [ -z "$(command -v vivado)" ]; then
+	echo "ERROR: No Xilinx tool has been sourced."
+	exit 1
+fi
+
+# generate the bitfile using Xilinx tools
+cd syn/scratch/
+vivado -mode tcl -source $PROJ/generate-bitfile.tcl
+
+
+# copy bitfile to repo root
+find ./$PROJ -name "*.bit" | xargs -I F cp F ../..
