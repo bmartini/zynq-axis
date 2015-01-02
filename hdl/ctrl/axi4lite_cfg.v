@@ -28,7 +28,7 @@ module axi4lite_cfg
     output                          axi_wready,     // Write Data Ready
 
     output      [1:0]               axi_bresp,      // Write Response
-    output reg                      axi_bvalid,     // Write Response Valid
+    output                          axi_bvalid,     // Write Response Valid
     input                           axi_bready,     // Write Response Ready
 
     input       [AXI_WIDTH-1:0]     axi_araddr,     // Read Address
