@@ -1,0 +1,67 @@
+#!/bin/bash
+set -o errexit
+
+
+# Should give an arg
+if [ $# == 0 ]
+then
+	echo "? executes the testbench for the module"
+	echo "syntax:"
+	echo "  ./sim-module <module-name>"
+	exit
+fi
+
+
+# create sim scratch work directory
+test -d sim/scratch && rm -rf sim/scratch
+mkdir -p sim/scratch/src
+
+# copy verilog code files from hdl directory into sim work dir
+for FILE in $(find ./hdl/* -name "*.v" -type f -print)
+do
+	cp -n $FILE ./sim/scratch/src/ || { echo "ERROR duplicate filename ${FILE}" ; exit 1; }
+done
+
+# copy verilog header files from hdl directory into sim work dir
+for FILE in $(find ./hdl/*/ -name "*.vh" -type f -print)
+do
+	cp -n $FILE ./sim/scratch/src/ || { echo "ERROR duplicate filename ${FILE}" ; exit 1; }
+done
+
+# copy SystemVerilog code files from hdl directory into sim work dir
+for FILE in $(find ./hdl/*/ -name "*.sv" -type f -print)
+do
+	cp -n $FILE ./sim/scratch/src/ || { echo "ERROR duplicate filename ${FILE}" ; exit 1; }
+done
+
+# cd into the working dir
+cd sim/scratch/src
+
+# UUT should contain the name of the unit under test
+if [ -f $1_tb.v ]
+then
+	UUT=$1
+else
+	echo "syntax:"
+	echo "  ./sim-module <module-name>"
+	echo ""
+	echo "Where <module-name>_tb.v should exist"
+	exit
+fi
+
+# compile current unit
+echo "UUT = $UUT"
+iverilog -o ../$UUT ${UUT}_tb.v
+cd ..
+
+# run current simul/testbench
+if [ -f $UUT ]
+then
+	./$UUT
+else
+	echo "iverilog failed"
+	exit
+fi
+
+
+echo "test for unit ${UUT} done"
