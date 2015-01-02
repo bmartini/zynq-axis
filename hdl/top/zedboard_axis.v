@@ -1,4 +1,6 @@
 
+`include "axi4lite_cfg.v"
+
 module zedboard_axis
    (inout       [14:0]  DDR_addr,
     inout       [2:0]   DDR_ba,
@@ -23,6 +25,8 @@ module zedboard_axis
     inout               FIXED_IO_ps_srstb
 );
 
+    genvar i;
+
     wire            axi_clk;
     wire            axi_rst_n;
 
@@ -46,6 +50,16 @@ module zedboard_axis
     wire [3:0]      axi_wstrb;
     wire            axi_wvalid;
 
+    wire [31:0]     cfg_wr_data;
+    wire [4:0]      cfg_wr_addr;
+    wire            cfg_wr_en;
+
+    reg  [31:0]     cfg_rd_data;
+    wire [4:9]      cfg_rd_addr;
+    wire            cfg_rd_en;
+
+    reg  [31:0]     cfg_hold [0:31];
+    reg  [0:31]     cfg_hold_en;
 
     system
     system_i (
@@ -94,6 +108,82 @@ module zedboard_axis
         .M00_AXI_wstrb      (axi_wstrb),
         .M00_AXI_wvalid     (axi_wvalid)
     );
+
+
+    axi4lite_cfg
+    axi4lite_cfg_ (
+        .clk            (axi_clk),
+        .rst            ( ~axi_rst_n),
+
+        .cfg_wr_data    (cfg_wr_data),
+        .cfg_wr_addr    (cfg_wr_addr),
+        .cfg_wr_en      (cfg_wr_en),
+
+        .cfg_rd_data    (cfg_rd_data),
+        .cfg_rd_addr    (cfg_rd_addr),
+        .cfg_rd_en      (cfg_rd_en),
+
+        .axi_awaddr     (axi_awaddr),
+        .axi_awprot     (axi_awprot),
+        .axi_awvalid    (axi_awvalid),
+        .axi_awready    (axi_awready),
+
+        .axi_wdata      (axi_wdata),
+        .axi_wstrb      (axi_wstrb),
+        .axi_wvalid     (axi_wvalid),
+        .axi_wready     (axi_wready),
+
+        .axi_bresp      (axi_bresp),
+        .axi_bvalid     (axi_bvalid),
+        .axi_bready     (axi_bready),
+
+        .axi_araddr     (axi_araddr),
+        .axi_arprot     (axi_arprot),
+        .axi_arvalid    (axi_arvalid),
+        .axi_arready    (axi_arready),
+
+        .axi_rdata      (axi_rdata),
+        .axi_rresp      (axi_rresp),
+        .axi_rvalid     (axi_rvalid),
+        .axi_rready     (axi_rready)
+    );
+
+
+    generate
+        for (i=0; i<32; i=i+1) begin : WRITE_CONFIG_
+
+            always @(posedge axi_clk) begin
+                cfg_hold_en[i] <= 1'b0;
+
+                if (cfg_wr_en & (i == cfg_wr_addr)) begin
+                    cfg_hold_en[i] <= 1'b1;
+                end
+            end
+
+
+            always @(posedge axi_clk) begin
+                if ( ~axi_rst_n) begin
+                    cfg_hold[i] <= 'b0;
+                end
+                else if (cfg_wr_en & (i == cfg_wr_addr)) begin
+                    cfg_hold[i] <= cfg_wr_data;
+                end
+            end
+
+        end
+    endgenerate
+
+
+    always @(posedge axi_clk) begin
+        cfg_rd_data <= 'b0;
+
+        if (cfg_rd_en) begin
+            case (cfg_rd_addr)
+
+                default : cfg_rd_data <= cfg_hold[cfg_rd_addr];
+            endcase
+        end
+    end
 
 
 endmodule
