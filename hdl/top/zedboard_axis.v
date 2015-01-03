@@ -50,6 +50,45 @@ module zedboard_axis
     wire [3:0]      axi_wstrb;
     wire            axi_wvalid;
 
+    wire [31:0]     axi_hp0_araddr;
+    wire [1:0]      axi_hp0_arburst;
+    wire [3:0]      axi_hp0_arcache;
+    wire [5:0]      axi_hp0_arid;
+    wire [3:0]      axi_hp0_arlen;
+    wire [1:0]      axi_hp0_arlock;
+    wire [2:0]      axi_hp0_arprot;
+    wire [3:0]      axi_hp0_arqos;
+    wire            axi_hp0_arready;
+    wire [2:0]      axi_hp0_arsize;
+    wire            axi_hp0_arvalid;
+    wire [31:0]     axi_hp0_awaddr;
+    wire [1:0]      axi_hp0_awburst;
+    wire [3:0]      axi_hp0_awcache;
+    wire [5:0]      axi_hp0_awid;
+    wire [3:0]      axi_hp0_awlen;
+    wire [1:0]      axi_hp0_awlock;
+    wire [2:0]      axi_hp0_awprot;
+    wire [3:0]      axi_hp0_awqos;
+    wire            axi_hp0_awready;
+    wire [2:0]      axi_hp0_awsize;
+    wire            axi_hp0_awvalid;
+    wire [5:0]      axi_hp0_bid;
+    wire            axi_hp0_bready;
+    wire [1:0]      axi_hp0_bresp;
+    wire            axi_hp0_bvalid;
+    wire [63:0]     axi_hp0_rdata;
+    wire [5:0]      axi_hp0_rid;
+    wire            axi_hp0_rlast;
+    wire            axi_hp0_rready;
+    wire [1:0]      axi_hp0_rresp;
+    wire            axi_hp0_rvalid;
+    wire [63:0]     axi_hp0_wdata;
+    wire [5:0]      axi_hp0_wid;
+    wire            axi_hp0_wlast;
+    wire            axi_hp0_wready;
+    wire [7:0]      axi_hp0_wstrb;
+    wire            axi_hp0_wvalid;
+
     wire [31:0]     cfg_wr_data;
     wire [4:0]      cfg_wr_addr;
     wire            cfg_wr_en;
@@ -106,7 +145,50 @@ module zedboard_axis
         .M00_AXI_wdata      (axi_wdata),
         .M00_AXI_wready     (axi_wready),
         .M00_AXI_wstrb      (axi_wstrb),
-        .M00_AXI_wvalid     (axi_wvalid)
+        .M00_AXI_wvalid     (axi_wvalid),
+
+        .S_AXI_HP0_araddr   (axi_hp0_araddr),
+        .S_AXI_HP0_arburst  (axi_hp0_arburst),
+        .S_AXI_HP0_arcache  (axi_hp0_arcache),
+        .S_AXI_HP0_arid     (axi_hp0_arid),
+        .S_AXI_HP0_arlen    (axi_hp0_arlen),
+        .S_AXI_HP0_arlock   (axi_hp0_arlock),
+        .S_AXI_HP0_arprot   (axi_hp0_arprot),
+        .S_AXI_HP0_arqos    (axi_hp0_arqos),
+        .S_AXI_HP0_arready  (axi_hp0_arready),
+        .S_AXI_HP0_arsize   (axi_hp0_arsize),
+        .S_AXI_HP0_arvalid  (axi_hp0_arvalid),
+
+        .S_AXI_HP0_awaddr   (axi_hp0_awaddr),
+        .S_AXI_HP0_awburst  (axi_hp0_awburst),
+        .S_AXI_HP0_awcache  (axi_hp0_awcache),
+        .S_AXI_HP0_awid     (axi_hp0_awid),
+        .S_AXI_HP0_awlen    (axi_hp0_awlen),
+        .S_AXI_HP0_awlock   (axi_hp0_awlock),
+        .S_AXI_HP0_awprot   (axi_hp0_awprot),
+        .S_AXI_HP0_awqos    (axi_hp0_awqos),
+        .S_AXI_HP0_awready  (axi_hp0_awready),
+        .S_AXI_HP0_awsize   (axi_hp0_awsize),
+        .S_AXI_HP0_awvalid  (axi_hp0_awvalid),
+
+        .S_AXI_HP0_bid      (axi_hp0_bid),
+        .S_AXI_HP0_bready   (axi_hp0_bready),
+        .S_AXI_HP0_bresp    (axi_hp0_bresp),
+        .S_AXI_HP0_bvalid   (axi_hp0_bvalid),
+
+        .S_AXI_HP0_rdata    (axi_hp0_rdata),
+        .S_AXI_HP0_rid      (axi_hp0_rid),
+        .S_AXI_HP0_rlast    (axi_hp0_rlast),
+        .S_AXI_HP0_rready   (axi_hp0_rready),
+        .S_AXI_HP0_rresp    (axi_hp0_rresp),
+        .S_AXI_HP0_rvalid   (axi_hp0_rvalid),
+
+        .S_AXI_HP0_wdata    (axi_hp0_wdata),
+        .S_AXI_HP0_wid      (axi_hp0_wid),
+        .S_AXI_HP0_wlast    (axi_hp0_wlast),
+        .S_AXI_HP0_wready   (axi_hp0_wready),
+        .S_AXI_HP0_wstrb    (axi_hp0_wstrb),
+        .S_AXI_HP0_wvalid   (axi_hp0_wvalid)
     );
 
 
