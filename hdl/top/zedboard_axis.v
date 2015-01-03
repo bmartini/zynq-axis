@@ -1,5 +1,6 @@
 
 `include "axi4lite_cfg.v"
+`include "axis.v"
 
 module zedboard_axis
    (inout       [14:0]  DDR_addr,
@@ -24,6 +25,21 @@ module zedboard_axis
     inout               FIXED_IO_ps_porb,
     inout               FIXED_IO_ps_srstb
 );
+
+    localparam CFG_AWIDTH       = 5;
+    localparam CFG_DWIDTH       = 32;
+
+    localparam AXI_ID_WIDTH     = 6;
+    localparam AXI_LEN_WIDTH    = 4;
+    localparam AXI_ADDR_WIDTH   = 32;
+    localparam AXI_DATA_WIDTH   = 64;
+
+    localparam
+        CFG_AXIS_ADDR   = 0,
+        CFG_AXIS_DATA   = 1,
+        CFG_HP0_CNT     = 2,
+        CFG_EMPTY       = 3;
+
 
     genvar i;
 
@@ -99,6 +115,16 @@ module zedboard_axis
 
     reg  [31:0]     cfg_hold [0:31];
     reg  [0:31]     cfg_hold_en;
+
+    wire [31:0]     sys_hp0_dst_data;
+    wire            sys_hp0_dst_valid;
+    wire            sys_hp0_dst_ready;
+
+    wire [31:0]     sys_hp0_src_data;
+    wire            sys_hp0_src_valid;
+    wire            sys_hp0_src_ready;
+
+    reg  [CFG_DWIDTH-1:0]   axis_hp0_cnt;
 
     system
     system_i (
@@ -261,11 +287,98 @@ module zedboard_axis
 
         if (cfg_rd_en) begin
             case (cfg_rd_addr)
+                CFG_HP0_CNT : cfg_rd_data <= axis_hp0_cnt;
 
                 default : cfg_rd_data <= cfg_hold[cfg_rd_addr];
             endcase
         end
     end
+
+
+    axis #(
+        .BUF_AWIDTH     (9),
+        .CONFIG_ID_RD   (1),
+        .CONFIG_ID_WR   (2),
+        .CONFIG_ADDR    (CFG_AXIS_ADDR),
+        .CONFIG_DATA    (CFG_AXIS_DATA),
+        .CONFIG_AWIDTH  (CFG_AWIDTH),
+        .CONFIG_DWIDTH  (CFG_DWIDTH),
+        .STREAM_WIDTH   (32),
+        .AXI_ID_WIDTH   (AXI_ID_WIDTH),
+        .AXI_LEN_WIDTH  (AXI_LEN_WIDTH),
+        .AXI_ADDR_WIDTH (AXI_ADDR_WIDTH),
+        .AXI_DATA_WIDTH (AXI_DATA_WIDTH))
+    axis_hp0_ (
+        .clk            (axi_clk),
+        .rst            ( ~axi_rst_n),
+
+        .cfg_addr       (cfg_wr_addr),
+        .cfg_data       (cfg_wr_data),
+        .cfg_valid      (cfg_wr_en),
+
+        .wr_data        (sys_hp0_dst_data),
+        .wr_valid       (sys_hp0_dst_valid),
+        .wr_ready       (sys_hp0_dst_ready),
+
+        .rd_data        (sys_hp0_src_data),
+        .rd_valid       (sys_hp0_src_valid),
+        .rd_ready       (sys_hp0_src_ready),
+
+        .axi_awready    (axi_hp0_awready),
+        .axi_awid       (axi_hp0_awid),
+        .axi_awaddr     (axi_hp0_awaddr),
+        .axi_awlen      (axi_hp0_awlen),
+        .axi_awsize     (axi_hp0_awsize),
+        .axi_awburst    (axi_hp0_awburst),
+        .axi_awlock     (axi_hp0_awlock),
+        .axi_awcache    (axi_hp0_awcache),
+        .axi_awprot     (axi_hp0_awprot),
+        .axi_awqos      (axi_hp0_awqos),
+        .axi_awvalid    (axi_hp0_awvalid),
+
+        .axi_wready     (axi_hp0_wready),
+        .axi_wdata      (axi_hp0_wdata),
+        .axi_wstrb      (axi_hp0_wstrb),
+        .axi_wlast      (axi_hp0_wlast),
+        .axi_wvalid     (axi_hp0_wvalid),
+
+        .axi_bid        (axi_hp0_bid),
+        .axi_bresp      (axi_hp0_bresp),
+        .axi_bvalid     (axi_hp0_bvalid),
+        .axi_bready     (axi_hp0_bready),
+
+        .axi_arready    (axi_hp0_arready),
+        .axi_arid       (axi_hp0_arid),
+        .axi_araddr     (axi_hp0_araddr),
+        .axi_arlen      (axi_hp0_arlen),
+        .axi_arsize     (axi_hp0_arsize),
+        .axi_arburst    (axi_hp0_arburst),
+        .axi_arlock     (axi_hp0_arlock),
+        .axi_arcache    (axi_hp0_arcache),
+        .axi_arprot     (axi_hp0_arprot),
+        .axi_arvalid    (axi_hp0_arvalid),
+        .axi_arqos      (axi_hp0_arqos),
+
+        .axi_rid        (axi_hp0_rid),
+        .axi_rresp      (axi_hp0_rresp),
+        .axi_rvalid     (axi_hp0_rvalid),
+        .axi_rdata      (axi_hp0_rdata),
+        .axi_rlast      (axi_hp0_rlast),
+        .axi_rready     (axi_hp0_rready)
+    );
+
+
+    assign sys_hp0_dst_data     = sys_hp0_src_data;
+    assign sys_hp0_dst_valid    = sys_hp0_src_valid;
+    assign sys_hp0_src_ready    = sys_hp0_dst_ready;
+
+
+    // counts number of system data sent from AXIS port
+    always @(posedge axi_clk)
+        if ( ~axi_rst_n) axis_hp0_cnt <= 'b0;
+        else if (sys_hp0_dst_valid) begin
+            axis_hp0_cnt <= axis_hp0_cnt + 1;
+        end
 
 
 endmodule
