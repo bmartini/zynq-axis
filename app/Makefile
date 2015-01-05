@@ -4,6 +4,7 @@ CFLAGS := -c -Wall -Werror
 INCLUDES := -I.
 
 EXECUTABLE = \
+	read-memory \
 	test-cfg
 
 
@@ -13,6 +14,10 @@ all : $(EXECUTABLE)
 
 .c.o :
 	$(CC) $(INCLUDES) $(CFLAGS) $< -o $@
+
+
+read-memory : read-memory.o
+	$(CC) $< -o $@ $(LDFLAGS)
 
 
 test-cfg : test-cfg.o
