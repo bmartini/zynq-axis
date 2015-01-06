@@ -35,12 +35,13 @@ module zedboard_axis
     localparam AXI_DATA_WIDTH   = 64;
 
     localparam
-        CFG_AXIS_ADDR   = 0,
-        CFG_AXIS_DATA   = 1,
-        CFG_HP0_DST_CNT = 2,
-        CFG_HP0_SRC_CNT = 3,
-        CFG_HP0_DATA    = 4,
-        CFG_EMPTY       = 5;
+        CFG_AXIS_ADDR       = 0,
+        CFG_AXIS_DATA       = 1,
+        CFG_HP0_DST_CNT     = 2,
+        CFG_HP0_SRC_CNT     = 3,
+        CFG_HP0_DST_DATA    = 4,
+        CFG_HP0_SRC_DATA    = 5,
+        CFG_EMPTY           = 6;
 
 
     genvar i;
@@ -291,8 +292,9 @@ module zedboard_axis
 
         if (cfg_rd_en) begin
             case (cfg_rd_addr)
-                CFG_HP0_DST_CNT : cfg_rd_data <= axis_hp0_dst_cnt;
-                CFG_HP0_SRC_CNT : cfg_rd_data <= axis_hp0_src_cnt;
+                CFG_HP0_DST_CNT     : cfg_rd_data <= axis_hp0_dst_cnt;
+                CFG_HP0_SRC_CNT     : cfg_rd_data <= axis_hp0_src_cnt;
+                CFG_HP0_SRC_DATA    : cfg_rd_data <= sys_hp0_src_data;
 
                 default : cfg_rd_data <= cfg_hold[cfg_rd_addr];
             endcase
@@ -373,9 +375,9 @@ module zedboard_axis
     );
 
 
-    assign sys_hp0_dst_data     = cfg_hold[CFG_HP0_DATA];
-    assign sys_hp0_dst_valid    = cfg_hold_en[CFG_HP0_DATA];
-    assign sys_hp0_src_ready    = 1'b0;
+    assign sys_hp0_dst_data     = cfg_hold[CFG_HP0_DST_DATA];
+    assign sys_hp0_dst_valid    = cfg_hold_en[CFG_HP0_DST_DATA];
+    assign sys_hp0_src_ready    = cfg_rd_en & (CFG_HP0_SRC_DATA == cfg_rd_addr);
 
 
     // counts number of system data sent from AXIS port
