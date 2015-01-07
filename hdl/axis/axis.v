@@ -84,7 +84,7 @@ module axis #(
     output      [AXI_LEN_WIDTH-1:0]     axi_arlen,
     output      [2:0]                   axi_arsize,
     output      [1:0]                   axi_arburst,
-    output                              axi_arlock,
+    output      [1:0]                   axi_arlock,
     output      [3:0]                   axi_arcache,
     output      [2:0]                   axi_arprot,
     output                              axi_arvalid,
@@ -114,7 +114,7 @@ module axis #(
     assign axi_wstrb    = {(AXI_DATA_WIDTH/8){1'b1}};
 
     // read path static values
-    assign axi_arlock   = 1'h0; // NORMAL_ACCESS
+    assign axi_arlock   = 2'h0; // NORMAL_ACCESS
     assign axi_arcache  = 4'h0; // NON_CACHE_NON_BUFFER
     assign axi_arprot   = 3'h0; // DATA_SECURE_NORMAL
     assign axi_arburst  = 2'h1; // INCREMENTING

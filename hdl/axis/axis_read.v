@@ -49,7 +49,7 @@ module axis_read
     output      [AXI_LEN_WIDTH-1:0]     axi_arlen,
     output                              axi_arvalid,
 
-    input                               axi_rresp,
+    input       [1:0]                   axi_rresp,
     input                               axi_rlast,
     input       [AXI_DATA_WIDTH-1:0]    axi_rdata,
     input                               axi_rvalid,
