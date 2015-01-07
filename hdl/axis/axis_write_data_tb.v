@@ -54,9 +54,12 @@ module axis_write_data_tb;
 
     localparam BUF_AWIDTH       = 4;
     localparam CONFIG_DWIDTH    = 32;
-    localparam WIDTH_RATIO      = 8;
-    localparam AXI_DATA_WIDTH   = 256;
+
+    localparam AXI_LEN_WIDTH    = 4;
+    localparam AXI_DATA_WIDTH   = 64;
     localparam DATA_WIDTH       = 32;
+
+    localparam WIDTH_RATIO      = AXI_DATA_WIDTH/DATA_WIDTH;
 
 
 `ifdef TB_VERBOSE
@@ -74,6 +77,7 @@ module axis_write_data_tb;
 
     reg     [CONFIG_DWIDTH-1:0]     cfg_length;
     reg                             cfg_valid;
+    wire                            cfg_ready;
 
     wire                            axi_wlast;
     wire    [AXI_DATA_WIDTH-1:0]    axi_wdata;
@@ -93,17 +97,18 @@ module axis_write_data_tb;
         .BUF_AWIDTH     (BUF_AWIDTH),
         .CONFIG_DWIDTH  (CONFIG_DWIDTH),
         .WIDTH_RATIO    (WIDTH_RATIO),
+        .CONVERT_SHIFT  ($clog2(WIDTH_RATIO)),
 
+        .AXI_LEN_WIDTH  (AXI_LEN_WIDTH),
         .AXI_DATA_WIDTH (AXI_DATA_WIDTH),
         .DATA_WIDTH     (DATA_WIDTH))
     uut (
         .clk            (clk),
         .rst            (rst),
 
-        .done           (done),
-
         .cfg_length     (cfg_length),
         .cfg_valid      (cfg_valid),
+        .cfg_ready      (cfg_ready),
 
         .axi_wlast      (axi_wlast),
         .axi_wdata      (axi_wdata),
@@ -125,9 +130,10 @@ module axis_write_data_tb;
             "%d\t%d",
             $time, rst,
 
-            "\t%d\t%b",
+            "\t%d\t%b\t%b",
             cfg_length,
             cfg_valid,
+            cfg_ready,
 
             "\t%x\t%b\t%b\t%b",
             axi_wdata,
@@ -139,9 +145,6 @@ module axis_write_data_tb;
             data,
             valid,
             ready,
-
-            "\t%b",
-            done,
 
             "\t%b",
             uut.state,
@@ -156,17 +159,16 @@ module axis_write_data_tb;
 
             "\t\tc_l",
             "\tc_v",
+            "\tc_r",
 
-            "\t\t\t\t\t\tw_d",
-            "\t\t\t\tw_v",
+            "\tw_d",
+            "\t\t\tw_v",
             "\tw_r",
             "\tw_l",
 
             "\t\ts_d",
             "\ts_v",
             "\ts_r",
-
-            "\tdone",
 
         );
     endtask

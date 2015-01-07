@@ -205,7 +205,8 @@ module axis_read
         .CONVERT_SHIFT  ($clog2(WIDTH_RATIO)),
         .AXI_ID_WIDTH   (AXI_ID_WIDTH),
         .AXI_LEN_WIDTH  (AXI_LEN_WIDTH),
-        .AXI_ADDR_WIDTH (AXI_ADDR_WIDTH))
+        .AXI_ADDR_WIDTH (AXI_ADDR_WIDTH),
+        .AXI_DATA_WIDTH (AXI_DATA_WIDTH))
     axis_addr_ (
         .clk            (clk),
         .rst            (rst),

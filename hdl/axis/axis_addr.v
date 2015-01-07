@@ -24,7 +24,8 @@ module axis_addr
     CONVERT_SHIFT   = 3,
     AXI_ID_WIDTH    = 8,
     AXI_LEN_WIDTH   = 8,
-    AXI_ADDR_WIDTH  = 32)
+    AXI_ADDR_WIDTH  = 32,
+    AXI_DATA_WIDTH  = 256)
    (input                               clk,
     input                               rst,
 
@@ -133,8 +134,8 @@ module axis_addr
             axi_address <= cfg_address;
         end
         else if (axi_aready & state[BURST]) begin
-            // each burst has 256 long words and each long word has 32 bytes
-            axi_address <= axi_address + (BURST_LENGTH * 32);
+            // e.g. each burst has 256 long words & each long word has 32 bytes
+            axi_address <= axi_address + (BURST_LENGTH * (AXI_DATA_WIDTH/8));
         end
 
 
