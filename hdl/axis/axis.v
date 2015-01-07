@@ -110,7 +110,7 @@ module axis #(
     assign axi_awprot   = 3'h0; // DATA_SECURE_NORMAL
     assign axi_awburst  = 2'h1; // INCREMENTING
     assign axi_awqos    = 4'h0; // NOT_QOS_PARTICIPANT
-    assign axi_awsize   = 3'h5; // THIRTY_TWO_BYTES
+    assign axi_awsize   = 3'h3; // EIGHT_BYTES
     assign axi_wstrb    = {(AXI_DATA_WIDTH/8){1'b1}};
 
     // read path static values
@@ -119,7 +119,7 @@ module axis #(
     assign axi_arprot   = 3'h0; // DATA_SECURE_NORMAL
     assign axi_arburst  = 2'h1; // INCREMENTING
     assign axi_arqos    = 4'h0; // NOT_QOS_PARTICIPANT
-    assign axi_arsize   = 3'h5; // THIRTY_TWO_BYTES
+    assign axi_arsize   = 3'h3; // EIGHT_BYTES
 
 
     //  assume that all writes are successful and therefore do not need to
