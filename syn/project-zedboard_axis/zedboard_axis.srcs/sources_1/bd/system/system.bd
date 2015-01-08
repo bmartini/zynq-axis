@@ -46,6 +46,78 @@
         </spirit:parameters>
       </spirit:busInterface>
       <spirit:busInterface>
+        <spirit:name>S_AXI_HP0</spirit:name>
+        <spirit:slave/>
+        <spirit:busType spirit:library="interface" spirit:name="aximm" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:abstractionType spirit:library="interface" spirit:name="aximm_rtl" spirit:vendor="xilinx.com" spirit:version="1.0"/>
+        <spirit:parameters>
+          <spirit:parameter>
+            <spirit:name>DATA_WIDTH</spirit:name>
+            <spirit:value>64</spirit:value>
+          </spirit:parameter>
+          <spirit:parameter>
+            <spirit:name>PROTOCOL</spirit:name>
+            <spirit:value>AXI3</spirit:value>
+          </spirit:parameter>
+          <spirit:parameter>
+            <spirit:name>FREQ_HZ</spirit:name>
+            <spirit:value>100000000</spirit:value>
+          </spirit:parameter>
+          <spirit:parameter>
+            <spirit:name>ID_WIDTH</spirit:name>
+            <spirit:value>6</spirit:value>
+          </spirit:parameter>
+          <spirit:parameter>
+            <spirit:name>ADDR_WIDTH</spirit:name>
+            <spirit:value>32</spirit:value>
+          </spirit:parameter>
+          <spirit:parameter>
+            <spirit:name>AWUSER_WIDTH</spirit:name>
+            <spirit:value>0</spirit:value>
+          </spirit:parameter>
+          <spirit:parameter>
+            <spirit:name>ARUSER_WIDTH</spirit:name>
+            <spirit:value>0</spirit:value>
+          </spirit:parameter>
+          <spirit:parameter>
+            <spirit:name>WUSER_WIDTH</spirit:name>
+            <spirit:value>0</spirit:value>
+          </spirit:parameter>
+          <spirit:parameter>
+            <spirit:name>RUSER_WIDTH</spirit:name>
+            <spirit:value>0</spirit:value>
+          </spirit:parameter>
+          <spirit:parameter>
+            <spirit:name>BUSER_WIDTH</spirit:name>
+            <spirit:value>0</spirit:value>
+          </spirit:parameter>
+          <spirit:parameter>
+            <spirit:name>READ_WRITE_MODE</spirit:name>
+            <spirit:value>READ_WRITE</spirit:value>
+          </spirit:parameter>
+          <spirit:parameter>
+            <spirit:name>SUPPORTS_NARROW_BURST</spirit:name>
+            <spirit:value>1</spirit:value>
+          </spirit:parameter>
+          <spirit:parameter>
+            <spirit:name>NUM_READ_OUTSTANDING</spirit:name>
+            <spirit:value>1</spirit:value>
+          </spirit:parameter>
+          <spirit:parameter>
+            <spirit:name>NUM_WRITE_OUTSTANDING</spirit:name>
+            <spirit:value>1</spirit:value>
+          </spirit:parameter>
+          <spirit:parameter>
+            <spirit:name>MAX_BURST_LENGTH</spirit:name>
+            <spirit:value>16</spirit:value>
+          </spirit:parameter>
+          <spirit:parameter>
+            <spirit:name>PHASE</spirit:name>
+            <spirit:value>0.000</spirit:value>
+          </spirit:parameter>
+        </spirit:parameters>
+      </spirit:busInterface>
+      <spirit:busInterface>
         <spirit:name>CLK.AXI_CLK</spirit:name>
         <spirit:displayName>Clk</spirit:displayName>
         <spirit:description>Clock</spirit:description>
@@ -107,6 +179,21 @@
         </spirit:port>
       </spirit:ports>
     </spirit:model>
+    <spirit:addressSpaces>
+      <spirit:addressSpace>
+        <spirit:name>S_AXI_HP0</spirit:name>
+        <spirit:range>4G</spirit:range>
+        <spirit:width>32</spirit:width>
+        <spirit:segments>
+          <spirit:segment>
+            <spirit:name>SEG_ps7_HP0_DDR_LOWOCM</spirit:name>
+            <spirit:displayName>/ps7/S_AXI_HP0/HP0_DDR_LOWOCM</spirit:displayName>
+            <spirit:addressOffset>0x00000000</spirit:addressOffset>
+            <spirit:range>512M</spirit:range>
+          </spirit:segment>
+        </spirit:segments>
+      </spirit:addressSpace>
+    </spirit:addressSpaces>
     <spirit:memoryMaps>
       <spirit:memoryMap>
         <spirit:name>M00_AXI</spirit:name>
@@ -131,6 +218,7 @@
         <spirit:componentRef spirit:library="ip" spirit:name="processing_system7" spirit:vendor="xilinx.com" spirit:version="5.4"/>
         <spirit:configurableElementValues>
           <spirit:configurableElementValue spirit:referenceId="bd:xciName">system_ps7_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="PCW_USE_S_AXI_HP0">1</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="preset">*</spirit:configurableElementValue>
         </spirit:configurableElementValues>
       </spirit:componentInstance>
@@ -160,6 +248,7 @@
         <spirit:internalPortReference spirit:componentRef="axi_interconnect_0" spirit:portRef="M00_ACLK"/>
         <spirit:internalPortReference spirit:componentRef="axi_interconnect_0" spirit:portRef="S00_ACLK"/>
         <spirit:internalPortReference spirit:componentRef="axi_interconnect_0" spirit:portRef="ACLK"/>
+        <spirit:internalPortReference spirit:componentRef="ps7" spirit:portRef="S_AXI_HP0_ACLK"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>ps7_FCLK_RESET0_N</spirit:name>
@@ -179,6 +268,9 @@
       </spirit:hierConnection>
       <spirit:hierConnection spirit:interfaceRef="M00_AXI/axi_interconnect_0_M00_AXI">
         <spirit:activeInterface spirit:busRef="M00_AXI" spirit:componentRef="axi_interconnect_0"/>
+      </spirit:hierConnection>
+      <spirit:hierConnection spirit:interfaceRef="S_AXI_HP0/S_AXI_HP0_1">
+        <spirit:activeInterface spirit:busRef="S_AXI_HP0" spirit:componentRef="ps7"/>
       </spirit:hierConnection>
     </spirit:hierConnections>
   </spirit:design>
