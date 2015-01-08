@@ -31,7 +31,6 @@ module axis_write
     CONFIG_AWIDTH   = 5,
     CONFIG_DWIDTH   = 32,
 
-    AXI_ID_WIDTH    = 8,
     AXI_LEN_WIDTH   = 8,
     AXI_ADDR_WIDTH  = 32,
     AXI_DATA_WIDTH  = 32,
@@ -44,7 +43,6 @@ module axis_write
     input                               cfg_valid,
 
     input                               axi_awready,
-    output      [AXI_ID_WIDTH-1:0]      axi_awid,
     output      [AXI_ADDR_WIDTH-1:0]    axi_awaddr,
     output      [AXI_LEN_WIDTH-1:0]     axi_awlen,
     output                              axi_awvalid,
@@ -202,7 +200,6 @@ module axis_write
         .CONFIG_DWIDTH  (CONFIG_DWIDTH),
         .WIDTH_RATIO    (WIDTH_RATIO),
         .CONVERT_SHIFT  ($clog2(WIDTH_RATIO)),
-        .AXI_ID_WIDTH   (AXI_ID_WIDTH),
         .AXI_LEN_WIDTH  (AXI_LEN_WIDTH),
         .AXI_ADDR_WIDTH (AXI_ADDR_WIDTH),
         .AXI_DATA_WIDTH (AXI_DATA_WIDTH))
@@ -216,7 +213,6 @@ module axis_write
         .cfg_ready      (cfg_addr_ready),
 
         .axi_aready     (axi_awready),
-        .axi_aid        (axi_awid),
         .axi_aaddr      (axi_awaddr),
         .axi_alen       (axi_awlen),
         .axi_avalid     (axi_awvalid)

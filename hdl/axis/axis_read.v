@@ -31,7 +31,6 @@ module axis_read
     CONFIG_AWIDTH   = 5,
     CONFIG_DWIDTH   = 32,
 
-    AXI_ID_WIDTH    = 8,
     AXI_LEN_WIDTH   = 8,
     AXI_ADDR_WIDTH  = 32,
     AXI_DATA_WIDTH  = 32,
@@ -44,7 +43,6 @@ module axis_read
     input                               cfg_valid,
 
     input                               axi_arready,
-    output      [AXI_ID_WIDTH-1:0]      axi_arid,
     output      [AXI_ADDR_WIDTH-1:0]    axi_araddr,
     output      [AXI_LEN_WIDTH-1:0]     axi_arlen,
     output                              axi_arvalid,
@@ -203,7 +201,6 @@ module axis_read
         .CONFIG_DWIDTH  (CONFIG_DWIDTH),
         .WIDTH_RATIO    (WIDTH_RATIO),
         .CONVERT_SHIFT  ($clog2(WIDTH_RATIO)),
-        .AXI_ID_WIDTH   (AXI_ID_WIDTH),
         .AXI_LEN_WIDTH  (AXI_LEN_WIDTH),
         .AXI_ADDR_WIDTH (AXI_ADDR_WIDTH),
         .AXI_DATA_WIDTH (AXI_DATA_WIDTH))
@@ -217,7 +214,6 @@ module axis_read
         .cfg_ready      (cfg_addr_ready),
 
         .axi_aready     (axi_arready),
-        .axi_aid        (axi_arid),
         .axi_aaddr      (axi_araddr),
         .axi_alen       (axi_arlen),
         .axi_avalid     (axi_arvalid)

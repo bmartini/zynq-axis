@@ -22,7 +22,6 @@ module axis_addr
     CONFIG_DWIDTH   = 32,
     WIDTH_RATIO     = 16,
     CONVERT_SHIFT   = 3,
-    AXI_ID_WIDTH    = 8,
     AXI_LEN_WIDTH   = 8,
     AXI_ADDR_WIDTH  = 32,
     AXI_DATA_WIDTH  = 256)
@@ -35,7 +34,6 @@ module axis_addr
     output                              cfg_ready,
 
     input                               axi_aready,
-    output reg  [AXI_ID_WIDTH-1:0]      axi_aid,
     output      [AXI_ADDR_WIDTH-1:0]    axi_aaddr,
     output      [AXI_LEN_WIDTH-1:0]     axi_alen,
     output                              axi_avalid
@@ -198,15 +196,6 @@ module axis_addr
             end
         endcase
     end
-
-
-    always @(posedge clk)
-        if (state[IDLE]) begin
-            axi_aid <= 'b0;
-        end
-        else if (axi_aready & axi_avalid) begin
-            axi_aid <= axi_aid + 1;
-        end
 
 
 endmodule

@@ -66,6 +66,7 @@ module axis #(
 
     // AXI write data channel signals
     input                               axi_wready,
+    output      [AXI_ID_WIDTH-1:0]      axi_wid,
     output      [AXI_DATA_WIDTH-1:0]    axi_wdata,
     output      [AXI_DATA_WIDTH/8-1:0]  axi_wstrb,
     output                              axi_wlast,
@@ -125,6 +126,8 @@ module axis #(
     assign axi_awburst  = 2'h1; // INCREMENTING
     assign axi_awqos    = 4'h0; // NOT_QOS_PARTICIPANT
     assign axi_awsize   = BURST_SIZE;
+    assign axi_awid     = {AXI_ID_WIDTH{1'b0}};
+    assign axi_wid      = {AXI_ID_WIDTH{1'b0}};
     assign axi_wstrb    = {(AXI_DATA_WIDTH/8){1'b1}};
 
     // read path static values
@@ -134,6 +137,7 @@ module axis #(
     assign axi_arburst  = 2'h1; // INCREMENTING
     assign axi_arqos    = 4'h0; // NOT_QOS_PARTICIPANT
     assign axi_arsize   = BURST_SIZE;
+    assign axi_arid     = {AXI_ID_WIDTH{1'b0}};
 
 
     //  assume that all writes are successful and therefore do not need to
@@ -150,7 +154,6 @@ module axis #(
         .CONFIG_AWIDTH  (CONFIG_AWIDTH),
         .CONFIG_DWIDTH  (CONFIG_DWIDTH),
 
-        .AXI_ID_WIDTH   (AXI_ID_WIDTH),
         .AXI_LEN_WIDTH  (AXI_LEN_WIDTH),
         .AXI_ADDR_WIDTH (AXI_ADDR_WIDTH),
         .AXI_DATA_WIDTH (AXI_DATA_WIDTH),
@@ -164,7 +167,6 @@ module axis #(
         .cfg_valid      (cfg_valid),
 
         .axi_awready    (axi_awready),
-        .axi_awid       (axi_awid),
         .axi_awaddr     (axi_awaddr),
         .axi_awlen      (axi_awlen),
         .axi_awvalid    (axi_awvalid),
@@ -189,7 +191,6 @@ module axis #(
         .CONFIG_AWIDTH  (CONFIG_AWIDTH),
         .CONFIG_DWIDTH  (CONFIG_DWIDTH),
 
-        .AXI_ID_WIDTH   (AXI_ID_WIDTH),
         .AXI_LEN_WIDTH  (AXI_LEN_WIDTH),
         .AXI_ADDR_WIDTH (AXI_ADDR_WIDTH),
         .AXI_DATA_WIDTH (AXI_DATA_WIDTH),
@@ -203,7 +204,6 @@ module axis #(
         .cfg_valid      (cfg_valid),
 
         .axi_arready    (axi_arready),
-        .axi_arid       (axi_arid),
         .axi_araddr     (axi_araddr),
         .axi_arlen      (axi_arlen),
         .axi_arvalid    (axi_arvalid),

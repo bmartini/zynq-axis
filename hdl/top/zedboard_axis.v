@@ -344,6 +344,7 @@ module zedboard_axis
         .axi_awvalid    (axi_hp0_awvalid),
 
         .axi_wready     (axi_hp0_wready),
+        .axi_wid        (axi_hp0_wid),
         .axi_wdata      (axi_hp0_wdata),
         .axi_wstrb      (axi_hp0_wstrb),
         .axi_wlast      (axi_hp0_wlast),
