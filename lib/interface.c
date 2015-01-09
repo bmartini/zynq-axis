@@ -7,6 +7,8 @@
 #include <stdio.h>
 
 static void *cfg;
+static char *mem;
+unsigned int mem_offset = 0;
 
 int axis_init(const char *path)
 {
@@ -15,6 +17,10 @@ int axis_init(const char *path)
 
 	cfg =
 	    mmap(NULL, REGISTER_NB, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+
+	mem = (char *)
+	    mmap(NULL, MEM_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd,
+		 sysconf(_SC_PAGESIZE));
 
 	close(fd);
 	if (cfg == MAP_FAILED) {
@@ -28,6 +34,11 @@ int axis_exit()
 {
 	if (munmap(cfg, REGISTER_NB) != 0) {
 		perror("Error un-mmapping the axis cfg");
+		return -1;
+	}
+
+	if (munmap(mem, MEM_SIZE) != 0) {
+		perror("Error un-mmapping the axis mem");
 		return -1;
 	}
 

@@ -6,6 +6,7 @@ extern "C" {
 #endif
 
 #define REGISTER_NB 32
+#define MEM_SIZE (63*1024*1024)
 
 	// init/exit function for device interface
 	int axis_init(const char *path);
