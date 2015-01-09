@@ -6,6 +6,7 @@ INCLUDES := -I.
 EXECUTABLE = \
 	write-memory \
 	read-memory \
+	test-mem \
 	test-cfg
 
 
@@ -22,6 +23,10 @@ write-memory : write-memory.o
 
 
 read-memory : read-memory.o
+	$(CC) $< -o $@ $(LDFLAGS)
+
+
+test-mem : test-mem.o
 	$(CC) $< -o $@ $(LDFLAGS)
 
 
