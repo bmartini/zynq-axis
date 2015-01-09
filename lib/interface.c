@@ -5,27 +5,58 @@
 #include <sys/mman.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <string.h>
 
 static void *cfg;
 static char *mem;
+unsigned int mem_start = 0;
 unsigned int mem_offset = 0;
 
 int axis_init(const char *path)
 {
 	int fd;
+	FILE *sys_fd;
+	char sys_path[1024];
+	char uio_name[1024];
+	ssize_t len = 0;
+
 	assert((fd = open(path, O_RDWR)) >= 0);
 
+	// configuration bus memory map
 	cfg =
 	    mmap(NULL, REGISTER_NB, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 
+	if (cfg == MAP_FAILED) {
+		fprintf(stderr,
+			"ERROR <Memory Map Failed> could not mmap *cfg* memory\n");
+		assert(0);
+	}
+	// dma array memory map
 	mem = (char *)
 	    mmap(NULL, MEM_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd,
 		 sysconf(_SC_PAGESIZE));
 
-	close(fd);
-	if (cfg == MAP_FAILED) {
-		return -1;
+	if (mem == MAP_FAILED) {
+		fprintf(stderr,
+			"ERROR <Memory Map Failed> could not mmap *mem* memory\n");
+		assert(0);
 	}
+	close(fd);
+
+	// dma ram start address
+	if ((len = readlink(path, uio_name, sizeof(uio_name) - 1)) == -1) {
+		perror("Error cannot resolve uio driver filename");
+		assert(0);
+	}
+
+	uio_name[len] = '\0';
+	sprintf(sys_path, "%s%s%s",
+		"/sys/class/uio/", uio_name, "/maps/map1/addr");
+
+	assert((sys_fd = fopen(sys_path, "r")) >= 0);
+
+	fscanf(sys_fd, "%x", &mem_start);
+	fclose(sys_fd);
 
 	return 0;
 }
