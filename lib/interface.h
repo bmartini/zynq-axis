@@ -16,7 +16,14 @@ extern "C" {
 	// configuration bus
 	void cfg_write(unsigned int addr, unsigned int data);
 
+	void cfg_write_array(unsigned int addr, unsigned int *data, int length);
+
+	void cfg_write_sequence(unsigned int *addr,
+				unsigned int *data, int length);
+
 	int cfg_read(unsigned int addr);
+
+	void cfg_poll(unsigned int addr, unsigned int data);
 
 	// dma memory
 	void *mem_alloc(const int length, const int byte_nb);

@@ -88,11 +88,39 @@ void cfg_write(unsigned int addr, unsigned int data)
 	*reg = data;
 }
 
+void cfg_write_array(unsigned int addr, unsigned int *data, int length)
+{
+	int xx;
+	volatile unsigned int *reg = ((volatile unsigned int *)cfg) + addr;
+
+	for (xx = 0; xx < length; xx++) {
+		*reg = data[xx];
+	}
+}
+
+void cfg_write_sequence(unsigned int *addr, unsigned int *data, int length)
+{
+	int xx;
+	volatile unsigned int *reg = ((volatile unsigned int *)cfg);
+
+	for (xx = 0; xx < length; xx++) {
+		*(reg + addr[xx]) = data[xx];
+	}
+}
+
 int cfg_read(unsigned int addr)
 {
 	volatile unsigned int *reg = ((volatile unsigned int *)cfg) + addr;
 
 	return *reg;
+}
+
+void cfg_poll(unsigned int addr, unsigned int data)
+{
+	int test = 0;
+	do {
+		test = cfg_read(addr);
+	} while (data > test) ;
 }
 
 void *mem_alloc(const int length, const int byte_nb)
