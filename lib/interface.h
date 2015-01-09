@@ -25,6 +25,13 @@ extern "C" {
 
 	int mem_alloc_length(const int length, const int byte_nb);
 
+	// axis ports
+	unsigned int axis_port_id(const int index, const int dirc);
+
+	unsigned int axis_memory_addr(void *ptr);
+
+	unsigned int axis_stream_length(const int length, const int byte_nb);
+
 #ifdef __cplusplus
 }
 #endif

@@ -3,6 +3,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define SRC 0
+#define DST 1
+
 enum cfg_regsiters {
 	CFG_AXIS_ADDR,
 	CFG_AXIS_DATA,
@@ -31,11 +34,10 @@ int main(int argc, char *argv[])
 	for (i = 0; i < 100; i++) {
 		array[i] = 100 + i;
 	}
-
 	// configure axis to write to memory
-	cfg_write(CFG_AXIS_ADDR, 1);
-	cfg_write(CFG_AXIS_DATA, 0x1b900000);
-	cfg_write(CFG_AXIS_DATA, 100);
+	cfg_write(CFG_AXIS_ADDR, axis_port_id(0, SRC));
+	cfg_write(CFG_AXIS_DATA, axis_memory_addr(array));
+	cfg_write(CFG_AXIS_DATA, axis_stream_length(100, sizeof(int)));
 
 	// display data that was read using axis
 	printf("read start\n");

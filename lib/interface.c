@@ -7,6 +7,11 @@
 #include <stdio.h>
 #include <string.h>
 
+#define AXIS_BUS_BYTES 4
+#define AXIS_NB 4
+#define SRC 0
+#define DST 1
+
 static void *cfg;
 static char *mem;
 unsigned int mem_start = 0;
@@ -133,4 +138,36 @@ int mem_alloc_length(const int length, const int byte_nb)
 	assert(byte_nb);
 
 	return (mem_alloc_size(length, byte_nb) / byte_nb);
+}
+
+unsigned int axis_port_id(const int index, const int dirc)
+{
+	assert(index >= 0);
+	assert(index < AXIS_NB);
+	assert((dirc == SRC) || (dirc == DST));
+
+	return ((2 * index) + (dirc + 1));
+}
+
+unsigned int axis_memory_addr(void *ptr)
+{
+	assert(((char *)ptr) >= mem);
+	assert(((char *)ptr) < (mem + MEM_SIZE));
+
+	return (mem_start + ((unsigned int)ptr) - ((unsigned int)mem));
+}
+
+unsigned int axis_stream_length(const int length, const int byte_nb)
+{
+	assert(length);
+	assert(byte_nb);
+
+	int size = length * byte_nb;
+	int remainder = size % AXIS_BUS_BYTES;
+
+	if (0 != remainder) {
+		size = size + AXIS_BUS_BYTES - remainder;
+	}
+
+	return (size / AXIS_BUS_BYTES);
 }
