@@ -18,6 +18,12 @@ extern "C" {
 
 	int cfg_read(unsigned int addr);
 
+	// dma memory
+	void *mem_alloc(const int length, const int byte_nb);
+
+	int mem_alloc_size(const int length, const int byte_nb);
+
+	int mem_alloc_length(const int length, const int byte_nb);
 
 #ifdef __cplusplus
 }

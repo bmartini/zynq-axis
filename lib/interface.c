@@ -58,3 +58,48 @@ int cfg_read(unsigned int addr)
 
 	return *reg;
 }
+
+void *mem_alloc(const int length, const int byte_nb)
+{
+	assert(mem);
+
+	// calculate start of next array
+	int next_offset = mem_offset + mem_alloc_size(length, byte_nb);
+
+	if (MEM_SIZE < next_offset) {
+		fprintf(stderr,
+			"ERROR <Out Of Memory> attempted total memory allocation: %i bytes\n",
+			next_offset);
+		assert(0);
+	}
+	// pointer to new array
+	void *ptr = &mem[mem_offset];
+
+	// update memory pointer to the next free area
+	mem_offset = next_offset;
+
+	return ptr;
+}
+
+int mem_alloc_size(const int length, const int byte_nb)
+{
+	assert(length);
+	assert(byte_nb);
+
+	int size = length * byte_nb;
+	int remainder = size % sysconf(_SC_PAGESIZE);
+
+	if (0 != remainder) {
+		size = size + sysconf(_SC_PAGESIZE) - remainder;
+	}
+
+	return size;
+}
+
+int mem_alloc_length(const int length, const int byte_nb)
+{
+	assert(length);
+	assert(byte_nb);
+
+	return (mem_alloc_size(length, byte_nb) / byte_nb);
+}
