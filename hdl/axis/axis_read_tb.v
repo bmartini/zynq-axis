@@ -60,7 +60,6 @@ module axis_read_tb;
     localparam CONFIG_AWIDTH    = 5;
     localparam CONFIG_DWIDTH    = 32;
 
-    localparam AXI_ID_WIDTH     = 8;
     localparam AXI_ADDR_WIDTH   = 32;
     localparam AXI_DATA_WIDTH   = 256;
     localparam DATA_WIDTH       = 32;
@@ -82,7 +81,6 @@ module axis_read_tb;
     reg                             cfg_valid;
 
     reg                             axi_arready;
-    wire    [AXI_ID_WIDTH-1:0]      axi_arid;
     wire    [AXI_ADDR_WIDTH-1:0]    axi_araddr;
     wire    [7:0]                   axi_arlen;
     wire                            axi_arvalid;
@@ -109,7 +107,6 @@ module axis_read_tb;
         .CONFIG_AWIDTH  (CONFIG_AWIDTH),
         .CONFIG_DWIDTH  (CONFIG_DWIDTH),
 
-        .AXI_ID_WIDTH   (AXI_ID_WIDTH),
         .AXI_ADDR_WIDTH (AXI_ADDR_WIDTH),
         .AXI_DATA_WIDTH (AXI_DATA_WIDTH),
         .DATA_WIDTH     (DATA_WIDTH))
@@ -122,7 +119,6 @@ module axis_read_tb;
         .cfg_valid      (cfg_valid),
 
         .axi_arready    (axi_arready),
-        .axi_arid       (axi_arid),
         .axi_araddr     (axi_araddr),
         .axi_arlen      (axi_arlen),
         .axi_arvalid    (axi_arvalid),
@@ -153,8 +149,7 @@ module axis_read_tb;
             cfg_data,
             cfg_valid,
 
-            "\t%d\t%d\t%d\t%b\t%b",
-            axi_arid,
+            "\t%d\t%d\t%b\t%b",
             axi_araddr,
             axi_arlen,
             axi_arvalid,
@@ -188,7 +183,6 @@ module axis_read_tb;
             "\t\tc_d",
             "\tc_v",
 
-            "\tar_id",
             "\t\tar_a",
             "\tar_l",
             "\tar_v",
