@@ -47,8 +47,6 @@ module axis_read
     output      [AXI_LEN_WIDTH-1:0]     axi_arlen,
     output                              axi_arvalid,
 
-    input       [1:0]                   axi_rresp,
-    input                               axi_rlast,
     input       [AXI_DATA_WIDTH-1:0]    axi_rdata,
     input                               axi_rvalid,
     output                              axi_rready,
@@ -234,8 +232,6 @@ module axis_read
         .cfg_valid      (cfg_enable),
         .cfg_ready      (cfg_data_ready),
 
-        .axi_rresp      (axi_rresp),
-        .axi_rlast      (axi_rlast),
         .axi_rdata      (axi_rdata),
         .axi_rvalid     (axi_rvalid),
         .axi_rready     (axi_rready),

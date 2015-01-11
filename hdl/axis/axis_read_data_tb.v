@@ -74,8 +74,6 @@ module axis_read_data_tb;
     reg                             cfg_valid;
     wire                            cfg_ready;
 
-    reg                             axi_rresp;
-    reg                             axi_rlast;
     reg     [AXI_DATA_WIDTH-1:0]    axi_rdata;
     reg                             axi_rvalid;
     wire                            axi_rready;
@@ -104,8 +102,6 @@ module axis_read_data_tb;
         .cfg_valid      (cfg_valid),
         .cfg_ready      (cfg_ready),
 
-        .axi_rresp      (axi_rresp),
-        .axi_rlast      (axi_rlast),
         .axi_rdata      (axi_rdata),
         .axi_rvalid     (axi_rvalid),
         .axi_rready     (axi_rready),
@@ -179,8 +175,6 @@ module axis_read_data_tb;
         cfg_length  = 'b0;
         cfg_valid   = 'b0;
 
-        axi_rresp   = 'b0;
-        axi_rlast   = 'b0;
         axi_rdata   = 'b0;
         axi_rvalid  = 'b0;
 

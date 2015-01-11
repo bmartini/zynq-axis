@@ -35,8 +35,6 @@ module axis_read_data
     input                               cfg_valid,
     output                              cfg_ready,
 
-    input       [1:0]                   axi_rresp,
-    input                               axi_rlast,
     input       [AXI_DATA_WIDTH-1:0]    axi_rdata,
     input                               axi_rvalid,
     output                              axi_rready,

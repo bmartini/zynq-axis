@@ -123,8 +123,6 @@ module axis_read_tb;
         .axi_arlen      (axi_arlen),
         .axi_arvalid    (axi_arvalid),
 
-        .axi_rresp      (),
-        .axi_rlast      (),
         .axi_rdata      (axi_rdata),
         .axi_rvalid     (axi_rvalid),
         .axi_rready     (axi_rready),
