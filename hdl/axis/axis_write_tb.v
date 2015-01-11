@@ -60,7 +60,6 @@ module axis_write_tb;
     localparam CONFIG_AWIDTH    = 5;
     localparam CONFIG_DWIDTH    = 32;
 
-    localparam AXI_ID_WIDTH     = 8;
     localparam AXI_LEN_WIDTH    = 2;
     localparam AXI_ADDR_WIDTH   = 32;
     localparam AXI_DATA_WIDTH   = 256;
@@ -83,9 +82,7 @@ module axis_write_tb;
     reg                             cfg_valid;
 
     reg                             axi_awready;
-    wire    [AXI_ID_WIDTH-1:0]      axi_awid;
     wire    [AXI_ADDR_WIDTH-1:0]    axi_awaddr;
-    //wire    [7:0]                   axi_awlen;
     wire    [AXI_LEN_WIDTH-1:0]     axi_awlen;
     wire                            axi_awvalid;
 
@@ -112,7 +109,6 @@ module axis_write_tb;
         .CONFIG_AWIDTH  (CONFIG_AWIDTH),
         .CONFIG_DWIDTH  (CONFIG_DWIDTH),
 
-        .AXI_ID_WIDTH   (AXI_ID_WIDTH),
         .AXI_LEN_WIDTH  (AXI_LEN_WIDTH),
         .AXI_ADDR_WIDTH (AXI_ADDR_WIDTH),
         .AXI_DATA_WIDTH (AXI_DATA_WIDTH),
@@ -126,9 +122,8 @@ module axis_write_tb;
         .cfg_valid      (cfg_valid),
 
         .axi_awready    (axi_awready),
-        .axi_awid       (axi_awid),
         .axi_awaddr     (axi_awaddr),
-        .axi_awlen      (axi_awlen[0 +: AXI_LEN_WIDTH]),
+        .axi_awlen      (axi_awlen),
         .axi_awvalid    (axi_awvalid),
 
         .axi_wlast      (axi_wlast),
@@ -156,8 +151,7 @@ module axis_write_tb;
             cfg_data,
             cfg_valid,
 
-            "\t%d\t%d\t%d\t%b\t%b",
-            axi_awid,
+            "\t%d\t%d\t%b\t%b",
             axi_awaddr,
             axi_awlen,
             axi_awvalid,
@@ -192,7 +186,6 @@ module axis_write_tb;
             "\t\tc_d",
             "\tc_v",
 
-            "\taw_id",
             "\t\taw_a",
             "\taw_l",
             "\taw_v",
