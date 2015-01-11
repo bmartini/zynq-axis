@@ -52,7 +52,6 @@ module axis_addr_tb;
 
     localparam CONFIG_DWIDTH    = 32;
     localparam WIDTH_RATIO      = 16;
-    localparam AXI_ID_WIDTH     = 8;
     localparam AXI_LEN_WIDTH    = 8;
     localparam AXI_ADDR_WIDTH   = 32;
 
@@ -74,7 +73,6 @@ module axis_addr_tb;
     wire                            cfg_ready;
 
     reg                             axi_aready;
-    wire    [AXI_ID_WIDTH-1:0]      axi_aid;
     wire    [AXI_ADDR_WIDTH-1:0]    axi_aaddr;
     wire    [AXI_LEN_WIDTH-1:0]     axi_alen;
     wire                            axi_avalid;
@@ -88,7 +86,6 @@ module axis_addr_tb;
         .CONFIG_DWIDTH  (CONFIG_DWIDTH),
         .WIDTH_RATIO    (WIDTH_RATIO),
         .CONVERT_SHIFT  ($clog2(WIDTH_RATIO)),
-        .AXI_ID_WIDTH   (AXI_ID_WIDTH),
         .AXI_LEN_WIDTH  (AXI_LEN_WIDTH),
         .AXI_ADDR_WIDTH (AXI_ADDR_WIDTH))
     uut (
@@ -101,7 +98,6 @@ module axis_addr_tb;
         .cfg_ready      (cfg_ready),
 
         .axi_aready     (axi_aready),
-        .axi_aid        (axi_aid),
         .axi_aaddr      (axi_aaddr),
         .axi_alen       (axi_alen),
         .axi_avalid     (axi_avalid)
@@ -123,8 +119,7 @@ module axis_addr_tb;
             cfg_valid,
             cfg_ready,
 
-            "\t%d\t%d\t%d\t%b\t%b",
-            axi_aid,
+            "\t%d\t%d\t%b\t%b",
             axi_aaddr,
             axi_alen,
             axi_avalid,
@@ -154,7 +149,6 @@ module axis_addr_tb;
             "\tc_v",
             "\tc_r",
 
-            "\ta_id",
             "\t\ta_a",
             "\ta_l",
             "\ta_v",
