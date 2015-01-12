@@ -1,1 +1,1 @@
-KERNEL=="uio*", ATTRS{name}=="axis_cfg", SYMLINK+="axis", MODE="0666"
+KERNEL=="uio*", ATTRS{name}=="axis", SYMLINK+="axis", MODE="0666"
