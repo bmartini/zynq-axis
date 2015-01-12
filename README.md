@@ -71,7 +71,7 @@ make KDIR=../../linux-xlnx
 
 Use of the driver module requires it to be inserted into the running Linux
 kernel. Once inserted it will automatically create a character device file in
-'/dev' called '/dev/uio*'. However, the default permissions will not allow
+'/dev' called '/dev/uio\*'. However, the default permissions will not allow
 non-root users to read/write to the file, nor is the numbering consistent if
 more then one UIO driver is being used. These problems are overcome by
 installing the udev rule file found in this projects *util* directory into the
