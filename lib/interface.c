@@ -151,10 +151,10 @@ int mem_alloc_size(const int length, const int byte_nb)
 	assert(byte_nb);
 
 	int size = length * byte_nb;
-	int remainder = size % sysconf(_SC_PAGESIZE);
+	int remainder = size % 8;
 
 	if (0 != remainder) {
-		size = size + sysconf(_SC_PAGESIZE) - remainder;
+		size = size + 8 - remainder;
 	}
 
 	return size;
