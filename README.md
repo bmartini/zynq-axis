@@ -67,6 +67,36 @@ cd zynq-axis/dev/
 make KDIR=../../linux-xlnx
 ```
 
+### Creating Devicetree
+
+The following AXIS device node needs to be added to the Zynq devicetree to
+expose the new hardware to the AXIS driver.
+
+```
+axis: axis@43C00000 {
+	compatible = "xlnx,axis-1.00";
+	reg = < 0x43C00000 0x10000 >;
+	xlnx,num-mem = <0x1>;
+	xlnx,num-reg = <0x20>;
+	xlnx,s-axi-min-size = <0x1ff>;
+	xlnx,slv-awidth = <0x20>;
+	xlnx,slv-dwidth = <0x20>;
+};
+```
+
+Source code for a usable and tested devicetree has been placed int the *util*
+directory of this repo. It is an altered version of the
+'arch/arm/boot/dts/zynq-7000.dtsi' file found in the linux-xlnx Xilinx repo,
+master branch commit (da2d296bb6b89f7bc7644f6b552b9766ac1c17d5).
+
+Once the kernel has been compiled for the Zynq, place the altered
+'zynq-7000-dtsi' file into the kernel 'arch/arm/boot/dts' directory. Then
+compile the new devicetree, for the Zedboard run the following command.
+
+```bash
+make zynq-zed.dtb
+```
+
 ### Installing Driver
 
 Use of the driver module requires it to be inserted into the running Linux
