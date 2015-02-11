@@ -143,3 +143,12 @@ The example application demonstrates some simple usage of the AXIS system.
 cd app/
 make
 ```
+
+
+## Acknowledgements
+
+This project was made possible by support from the following people and organisations.
+
+* [Teradeep](http://teradeep.com)
+* [e-Lab @ Purdue](https://engineering.purdue.edu/elab)
+* [E. Culurciello](https://github.com/culurciello)
