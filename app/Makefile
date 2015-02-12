@@ -1,4 +1,4 @@
-CC = gcc
+CC = ${CROSS_COMPILE}gcc
 LDFLAGS := -linterface
 CFLAGS := -c -Wall -Werror
 INCLUDES := -I.

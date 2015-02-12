@@ -1,4 +1,4 @@
-CC = gcc
+CC = ${CROSS_COMPILE}gcc
 CFLAGS := -c -fpic -Wall -Werror
 INCLUDES := -I.
 LIBOPTS := -shared
