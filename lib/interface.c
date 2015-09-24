@@ -8,7 +8,6 @@
 #include <string.h>
 
 #define AXIS_BUS_BYTES 4
-#define AXIS_NB 4
 #define SRC 0
 #define DST 1
 
@@ -171,7 +170,6 @@ int mem_alloc_length(const int length, const int byte_nb)
 unsigned int axis_port_id(const int index, const int dirc)
 {
 	assert(index >= 0);
-	assert(index < AXIS_NB);
 	assert((dirc == SRC) || (dirc == DST));
 
 	return ((2 * index) + (dirc + 1));
