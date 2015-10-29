@@ -167,6 +167,16 @@ int mem_alloc_length(const int length, const int byte_nb)
 	return (mem_alloc_size(length, byte_nb) / byte_nb);
 }
 
+void mem_alloc_state(void **start, unsigned int *offset)
+{
+	assert(mem);
+	assert(start);
+	assert(offset);
+
+	*start = &mem[0];
+	*offset = mem_offset;
+}
+
 unsigned int axis_port_id(const int index, const int dirc)
 {
 	assert(index >= 0);
@@ -181,13 +191,6 @@ unsigned int axis_memory_addr(void *ptr)
 	assert(((char *)ptr) < (mem + MEM_SIZE));
 
 	return (mem_start + ((unsigned int)ptr) - ((unsigned int)mem));
-}
-
-void *axis_memory_offset(unsigned int offset)
-{
-	assert(offset < MEM_SIZE);
-
-	return &mem[offset];
 }
 
 unsigned int axis_stream_length(const int length, const int byte_nb)

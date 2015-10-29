@@ -32,12 +32,12 @@ extern "C" {
 
 	int mem_alloc_length(const int length, const int byte_nb);
 
+	void mem_alloc_state(void **start, unsigned int *offset);
+
 	// axis ports
 	unsigned int axis_port_id(const int index, const int dirc);
 
 	unsigned int axis_memory_addr(void *ptr);
-
-	void *axis_memory_offset(unsigned int offset);
 
 	unsigned int axis_stream_length(const int length, const int byte_nb);
 
