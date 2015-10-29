@@ -23,7 +23,7 @@
 #include <linux/of_address.h>
 
 #define DRIVER_NAME "axis"
-#define CMA_SIZE (63*1024*1024)
+#define CMA_SIZE (126*1024*1024)
 
 struct axis_platdata {
 	struct uio_info *uioinfo;
