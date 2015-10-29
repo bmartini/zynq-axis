@@ -119,7 +119,7 @@ void cfg_poll(unsigned int addr, unsigned int data)
 	int test = 0;
 	do {
 		test = cfg_read(addr);
-	} while (data > test) ;
+	} while (data > test);
 }
 
 void *mem_alloc(const int length, const int byte_nb)
