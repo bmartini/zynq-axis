@@ -183,6 +183,13 @@ unsigned int axis_memory_addr(void *ptr)
 	return (mem_start + ((unsigned int)ptr) - ((unsigned int)mem));
 }
 
+void *axis_memory_offset(unsigned int offset)
+{
+	assert(offset < MEM_SIZE);
+
+	return &mem[offset];
+}
+
 unsigned int axis_stream_length(const int length, const int byte_nb)
 {
 	assert(length);

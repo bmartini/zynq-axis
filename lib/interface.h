@@ -37,6 +37,8 @@ extern "C" {
 
 	unsigned int axis_memory_addr(void *ptr);
 
+	void *axis_memory_offset(unsigned int offset);
+
 	unsigned int axis_stream_length(const int length, const int byte_nb);
 
 #ifdef __cplusplus
