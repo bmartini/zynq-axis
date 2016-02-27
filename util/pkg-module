@@ -11,6 +11,9 @@ Description: Package a code as a Xilinx IP Package.
 Options:
  -h	Print this help info.
 
+ -p	Specify FPGA platform ([zedboard]|zc706|microzed).
+	This option passed to the 'syn/make-proj.sh' script.
+
 
 Argument:
 	The 'module-name' is the top file of the IP Package.
@@ -19,9 +22,12 @@ Argument:
 
 
 # command line options
-while getopts "h" flag
+platform="zedboard"
+
+while getopts "hp:" flag
 do
 	case "$flag" in
+		p) platform="$OPTARG" ;;
 		h) print_usage; exit 2;;
 		?) print_usage; exit 2;;
 	esac
@@ -86,7 +92,7 @@ fi
 
 # generate the Xilinx project to use to create IP Package
 cd syn/scratch/
-../make-proj.sh -p zc706
+../make-proj.sh -p "${platform,,}"
 
 
 
