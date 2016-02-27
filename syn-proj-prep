@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -o errexit
 
 
@@ -46,7 +46,11 @@ function copy_for_synth() {
 
 
 	# copy 3rd party IP into syn work dir
-	test -d ip/* && { cp -r ip/* syn/scratch/; }
+	test -d ip && { cp -r ip/* syn/scratch/; }
+
+	# populate IP Package hdl directories
+	test -d syn/scratch/ip_repo && { find syn/scratch/ip_repo -maxdepth 1 -mindepth 1 -type d | xargs -I D sh -c 'mkdir -p D/hdl; cp syn/scratch/src/* D/hdl/;'; }
+
 
 	echo "Source files copied to scratch directory"
 }

@@ -1,0 +1,133 @@
+#!/usr/bin/env bash
+set -o errexit
+
+
+function print_usage() {
+	echo "
+Usage: $0 [OPTION] [module-name]
+
+Description: Package a code as a Xilinx IP Package.
+
+Options:
+ -h	Print this help info.
+
+ -p	Specify FPGA platform ([zedboard]|zc706|microzed).
+	This option passed to the 'syn/make-proj.sh' script.
+
+
+Argument:
+	The 'module-name' is the top file of the IP Package.
+"
+}
+
+
+# command line options
+platform="zedboard"
+
+while getopts "hp:" flag
+do
+	case "$flag" in
+		p) platform="$OPTARG" ;;
+		h) print_usage; exit 2;;
+		?) print_usage; exit 2;;
+	esac
+done
+
+
+# if script invoked in 'util' dir, cd into repos root
+if [ $(basename ${PWD}) == "util" ]; then
+	cd ..
+fi
+
+
+# set path so script can find child scripts
+PATH=.:${PWD}/util:${PATH}
+
+# module name variable
+NAME=
+
+
+# sanitise module name argument
+shift $(($OPTIND - 1))
+if [ $# -gt 1 ]
+then :
+	echo "ERROR: To many arguments"
+	exit 1
+elif [ $# -lt 1 ]
+then :
+	echo "ERROR: No arguments"
+	exit 1
+fi
+
+
+# assign project if given as argument
+if [[ ! -z "$@" ]]
+then :
+	NAME=$@
+fi
+
+
+# test and create IP Package directory
+test -d ./ip/ip_repo/${NAME}_1.0 && rm -rf ./ip/ip_repo/${NAME}_1.0
+test -d ./ip/ip_repo/${NAME}_1.0 || mkdir -p ./ip/ip_repo/${NAME}_1.0
+
+
+# prep for project syntheses
+syn-proj-prep
+
+
+if [ ! -d syn/scratch ]
+then :
+	echo "ERROR: No 'syn/scratch' directory found"
+	exit 1
+fi
+
+
+# test if Xilinx tools are sourced
+if [ -z "$(command -v vivado)" ]; then
+	echo "ERROR: No Xilinx tool has been sourced."
+	exit 1
+fi
+
+
+# generate the Xilinx project to use to create IP Package
+cd syn/scratch/
+../make-proj.sh -p "${platform,,}"
+
+
+
+# if tmp.tcl file exists delete it
+test -e ./tmp.tcl && rm ./tmp.tcl
+
+
+echo "
+open_project project-tmp/tmp.xpr
+add_files -norecurse ./ip_repo/${NAME}_1.0/hdl/${NAME}.v
+
+update_compile_order -fileset sources_1
+update_compile_order -fileset sim_1
+
+ipx::package_project -root_dir ./ip_repo/${NAME}_1.0 -vendor user.org -library user -taxonomy /UserIP -generated_files -force
+
+set_property vendor zynq-axis [ipx::current_core]
+set_property company_url https://github.com/bmartini/zynq-axis [ipx::current_core]
+set_property core_revision 2 [ipx::current_core]
+
+ipx::create_xgui_files [ipx::current_core]
+ipx::update_checksums [ipx::current_core]
+ipx::save_core [ipx::current_core]
+
+set_property  ip_repo_paths  ./ip_repo/${NAME}_1.0 [current_project]
+update_ip_catalog
+
+exit
+" > tmp.tcl
+
+
+# run vivado to IP Package
+vivado -mode batch -nolog -nojournal -source tmp.tcl
+
+
+rm tmp.tcl
+cp -v ./ip_repo/${NAME}_1.0/component.xml ../../ip/ip_repo/${NAME}_1.0
+cp -rv ./ip_repo/${NAME}_1.0/xgui/ ../../ip/ip_repo/${NAME}_1.0
