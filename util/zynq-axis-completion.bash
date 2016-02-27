@@ -13,6 +13,17 @@ fi
 BASHRC_CODE
 
 
+_pkg-module_complete() {
+	COMPREPLY=()
+	local cur="${COMP_WORDS[COMP_CWORD]}"
+	local completions="$(find hdl/ -type f \( -name "*.v" ! -name "*_tb.v" \) \
+		-exec basename {} .v \; | xargs echo)"
+
+	COMPREPLY=( $(compgen -W "$completions" -- "$cur") )
+}
+complete -F _pkg-module_complete pkg-module
+
+
 _sim-module_complete() {
 	COMPREPLY=()
 	local cur="${COMP_WORDS[COMP_CWORD]}"
