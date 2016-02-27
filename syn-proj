@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -o errexit
 
 
@@ -83,4 +83,4 @@ vivado -mode tcl -source $PROJ/generate-bitfile.tcl
 
 
 # copy bitfile to repo root
-find ./$PROJ -name "*.bit" | xargs -I F cp F ../..
+find ./$PROJ -name "*.bit" | xargs -I F cp F ../../${PROJ#"project-"}.bit
