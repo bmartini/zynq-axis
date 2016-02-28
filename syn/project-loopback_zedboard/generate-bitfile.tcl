@@ -17,7 +17,7 @@ apply_bd_automation -rule xilinx.com:bd_rule:processing_system7 -config {make_ex
 endgroup
 
 startgroup
-set_property -dict [list CONFIG.PCW_FPGA0_PERIPHERAL_FREQMHZ {250}] [get_bd_cells ps7]
+set_property -dict [list CONFIG.PCW_FPGA0_PERIPHERAL_FREQMHZ {142}] [get_bd_cells ps7]
 endgroup
 
 startgroup
@@ -28,10 +28,10 @@ startgroup
 create_bd_cell -type ip -vlnv zynq-axis:user:axis_loopback:1.0 axis_loopback_0
 endgroup
 
-apply_bd_automation -rule xilinx.com:bd_rule:axi4 -config {Master "/ps7/M_AXI_GP0" Clk "/ps7/FCLK_CLK0 (250 MHz)" }  [get_bd_intf_pins axis_loopback_0/s00_axi]
-apply_bd_automation -rule xilinx.com:bd_rule:axi4 -config {Master "/axis_loopback_0/m00_axi" Clk "/ps7/FCLK_CLK0 (250 MHz)" }  [get_bd_intf_pins ps7/S_AXI_HP0]
+apply_bd_automation -rule xilinx.com:bd_rule:axi4 -config {Master "/ps7/M_AXI_GP0" Clk "/ps7/FCLK_CLK0 (142 MHz)" }  [get_bd_intf_pins axis_loopback_0/s00_axi]
+apply_bd_automation -rule xilinx.com:bd_rule:axi4 -config {Master "/axis_loopback_0/m00_axi" Clk "/ps7/FCLK_CLK0 (142 MHz)" }  [get_bd_intf_pins ps7/S_AXI_HP0]
 
-connect_bd_net [get_bd_pins axis_loopback_0/rst_n] [get_bd_pins rst_ps7_250M/peripheral_aresetn]
+connect_bd_net [get_bd_pins axis_loopback_0/rst_n] [get_bd_pins rst_ps7_142M/peripheral_aresetn]
 
 make_wrapper -files [get_files ./project-loopback_zedboard/loopback_zedboard.srcs/sources_1/bd/system/system.bd] -top
 add_files -norecurse ./project-loopback_zedboard/loopback_zedboard.srcs/sources_1/bd/system/hdl/system_wrapper.v
