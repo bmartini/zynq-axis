@@ -4,26 +4,27 @@
 
 module axi4lite_cfg
   #(parameter
-    integer AXI_WIDTH   = 32,
-    integer CFG_AWIDTH  = 5)
+    CFG_DWIDTH  = 32,
+    CFG_AWIDTH  = 5,
+    AXI_AWIDTH  = (CFG_AWIDTH + $clog2(CFG_DWIDTH/8)))  // do not overwite
    (input                           clk,
     input                           rst,
 
-    output reg  [AXI_WIDTH-1:0]     cfg_wr_data,
+    output reg  [CFG_DWIDTH-1:0]    cfg_wr_data,
     output reg  [CFG_AWIDTH-1:0]    cfg_wr_addr,
     output reg                      cfg_wr_en,
 
-    input       [AXI_WIDTH-1:0]     cfg_rd_data,
+    input       [CFG_DWIDTH-1:0]    cfg_rd_data,
     output reg  [CFG_AWIDTH-1:0]    cfg_rd_addr,
     output reg                      cfg_rd_en,
 
-    input       [AXI_WIDTH-1:0]     axi_awaddr,     // Write Address
+    input       [AXI_AWIDTH-1:0]    axi_awaddr,     // Write Address
     input       [2:0]               axi_awprot,     // Write Address Protection
     input                           axi_awvalid,    // Write Address Valid
     output                          axi_awready,    // Write Address Ready
 
-    input       [AXI_WIDTH-1:0]     axi_wdata,      // Write Data
-    input       [(AXI_WIDTH/8)-1:0] axi_wstrb,      // Write Data Strobe
+    input       [CFG_DWIDTH-1:0]    axi_wdata,      // Write Data
+    input       [CFG_DWIDTH/8-1:0]  axi_wstrb,      // Write Data Strobe
     input                           axi_wvalid,     // Write Data Valid
     output                          axi_wready,     // Write Data Ready
 
@@ -31,12 +32,12 @@ module axi4lite_cfg
     output                          axi_bvalid,     // Write Response Valid
     input                           axi_bready,     // Write Response Ready
 
-    input       [AXI_WIDTH-1:0]     axi_araddr,     // Read Address
+    input       [AXI_AWIDTH-1:0]    axi_araddr,     // Read Address
     input       [2:0]               axi_arprot,     // Read Address Protection
     input                           axi_arvalid,    // Read Address Valid
     output reg                      axi_arready,    // Read Address Ready
 
-    output      [AXI_WIDTH-1:0]     axi_rdata,      // Read Data
+    output      [CFG_DWIDTH-1:0]    axi_rdata,      // Read Data
     output      [1:0]               axi_rresp,      // Read Data Response
     output reg                      axi_rvalid,     // Read Data Valid
     input                           axi_rready      // Read Data Ready
@@ -48,7 +49,7 @@ module axi4lite_cfg
      */
 
 
-    reg  [AXI_WIDTH-1:0]    axi_wr_addr;
+    reg  [AXI_AWIDTH-1:0]   axi_wr_addr;
     wire                    axi_wr_valid;
     reg                     axi_wr_ready;
 
@@ -105,7 +106,7 @@ module axi4lite_cfg
         cfg_wr_addr <= 'b0;
 
         if (axi_wr_valid) begin
-            cfg_wr_addr <= axi_wr_addr[$clog2(AXI_WIDTH/8) +: CFG_AWIDTH];
+            cfg_wr_addr <= axi_wr_addr[$clog2(CFG_DWIDTH/8) +: CFG_AWIDTH];
         end
     end
 
@@ -133,7 +134,7 @@ module axi4lite_cfg
         cfg_rd_addr <= 'b0;
 
         if ( ~axi_arready & axi_arvalid) begin
-            cfg_rd_addr <= axi_araddr[$clog2(AXI_WIDTH/8) +: CFG_AWIDTH];
+            cfg_rd_addr <= axi_araddr[$clog2(CFG_DWIDTH/8) +: CFG_AWIDTH];
         end
     end
 
