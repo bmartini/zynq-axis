@@ -9,7 +9,7 @@ finial uImage file.
 ## Dependencies
 
 Install the latest Vivado from Xilinx, as of writing the current version is
-Vivado 2015.2.
+Vivado 2015.4.
 
 Clone the Xilinx u-boot and Linux kernel repos.
 
@@ -42,7 +42,7 @@ sudo yum install dtc
 ## Set Environmental Variables
 
 ```bash
-. /opt/Xilinx/Vivado/2015.2/settings64.sh
+. /opt/Xilinx/Vivado/2015.4/settings64.sh
 export CROSS_COMPILE=arm-xilinx-linux-gnueabi-
 export ARCH=arm
 export PATH=$PWD/u-boot-xlnx/tools:$PATH
