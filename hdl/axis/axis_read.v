@@ -62,6 +62,7 @@ module axis_read
 
     localparam WIDTH_RATIO  = AXI_DATA_WIDTH/DATA_WIDTH;
     localparam CONFIG_NB    = 2;
+    localparam STORE_WIDTH  = CONFIG_DWIDTH*CONFIG_NB;
 
     localparam
         C_IDLE      = 0,
@@ -89,7 +90,8 @@ module axis_read
     reg  [CONFIG_AWIDTH-1:0]            cfg_addr_r;
     reg  [CONFIG_DWIDTH-1:0]            cfg_data_r;
     reg                                 cfg_valid_r;
-    reg  [CONFIG_DWIDTH*CONFIG_NB-1:0]  cfg_store;
+    wire [STORE_WIDTH+CONFIG_DWIDTH-1:0]    cfg_store_i;
+    reg  [STORE_WIDTH-1:0]              cfg_store;
     reg  [7:0]                          cfg_cnt;
 
     wire [CONFIG_DWIDTH-1:0]            start_addr;
@@ -105,6 +107,8 @@ module axis_read
     /**
      * Implementation
      */
+
+    assign cfg_store_i  = {cfg_store, cfg_data_r};
 
     assign start_addr   = cfg_store[CONFIG_DWIDTH +: CONFIG_DWIDTH];
 
@@ -132,7 +136,7 @@ module axis_read
 
     always @(posedge clk)
         if (c_state[C_CONFIG] & axis_data) begin
-            cfg_store <= {cfg_store, cfg_data_r};
+            cfg_store <= cfg_store_i[0 +: STORE_WIDTH];
         end
 
 
