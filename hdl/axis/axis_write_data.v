@@ -24,11 +24,11 @@ module axis_write_data
   #(parameter
     BUF_AWIDTH      = 9,
     CONFIG_DWIDTH   = 32,
-    WIDTH_RATIO     = 16,
+    WIDTH_RATIO     = 2,
     CONVERT_SHIFT   = 3,
 
     AXI_LEN_WIDTH   = 8,
-    AXI_DATA_WIDTH  = 32,
+    AXI_DATA_WIDTH  = 64,
     DATA_WIDTH      = 32)
    (input                               clk,
     input                               rst,
@@ -112,8 +112,10 @@ module axis_write_data
 
 
     always @(posedge clk)
-        if      (state[IDLE])   str_cnt <= 'b0;
-        else if (axi_wready)    str_cnt <= str_cnt + buf_pop;
+        if (state[IDLE]) str_cnt <= 'b0;
+        else if (axi_wready & buf_pop) begin
+            str_cnt <= str_cnt + 'd1;
+        end
 
 
     always @(posedge clk)
@@ -174,32 +176,32 @@ module axis_write_data
 
 
     always @* begin : DATA_
-        state_nx <= 'b0;
+        state_nx = 'b0;
 
         case (1'b1)
             state[IDLE] : begin
                 if (cfg_valid) begin
-                    state_nx[ACTIVE] <= 1'b1;
+                    state_nx[ACTIVE] = 1'b1;
                 end
-                else state_nx[IDLE] <= 1'b1;
+                else state_nx[IDLE] = 1'b1;
             end
             state[ACTIVE] : begin
                 if (axi_wready & buf_pop & (str_length == str_cnt)) begin
-                    state_nx[WAIT] <= 1'b1;
+                    state_nx[WAIT] = 1'b1;
                 end
-                else state_nx[ACTIVE] <= 1'b1;
+                else state_nx[ACTIVE] = 1'b1;
             end
             state[WAIT] : begin
                 if (axi_wready & axi_wlast) begin
-                    state_nx[DONE] <= 1'b1;
+                    state_nx[DONE] = 1'b1;
                 end
-                else state_nx[WAIT] <= 1'b1;
+                else state_nx[WAIT] = 1'b1;
             end
             state[DONE] : begin
-                state_nx[IDLE] <= 1'b1;
+                state_nx[IDLE] = 1'b1;
             end
             default : begin
-                state_nx[IDLE] <= 1'b1;
+                state_nx[IDLE] = 1'b1;
             end
         endcase
     end
