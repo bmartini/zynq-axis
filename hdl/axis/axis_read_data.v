@@ -92,8 +92,10 @@ module axis_read_data
 
 
     always @(posedge clk)
-        if (state[IDLE])    str_cnt <= 'b0;
-        else                str_cnt <= str_cnt + buf_pop;
+        if (state[IDLE]) str_cnt <= 'b0;
+        else if (buf_pop) begin
+            str_cnt <= str_cnt + 'b1;
+        end
 
 
     always @(posedge clk)
