@@ -148,29 +148,29 @@ module axis_read_data
 
 
     always @* begin : DATA_
-        state_nx <= 'b0;
+        state_nx = 'b0;
 
         case (1'b1)
             state[IDLE] : begin
                 if (cfg_valid) begin
-                    state_nx[ACTIVE] <= 1'b1;
+                    state_nx[ACTIVE] = 1'b1;
                 end
-                else state_nx[IDLE] <= 1'b1;
+                else state_nx[IDLE] = 1'b1;
             end
             state[ACTIVE] : begin
                 if (buf_pop & (str_length == str_cnt)) begin
-                    state_nx[WAIT] <= 1'b1;
+                    state_nx[WAIT] = 1'b1;
                 end
-                else state_nx[ACTIVE] <= 1'b1;
+                else state_nx[ACTIVE] = 1'b1;
             end
             state[WAIT] : begin
-                state_nx[DONE] <= 1'b1;
+                state_nx[DONE] = 1'b1;
             end
             state[DONE] : begin
-                state_nx[IDLE] <= 1'b1;
+                state_nx[IDLE] = 1'b1;
             end
             default : begin
-                state_nx[IDLE] <= 1'b1;
+                state_nx[IDLE] = 1'b1;
             end
         endcase
     end
