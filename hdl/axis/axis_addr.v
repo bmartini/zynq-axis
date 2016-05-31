@@ -74,6 +74,7 @@ module axis_addr
     reg                         burst_en;
     reg  [BURST_NB_WIDTH-1:0]   burst_nb;
     reg  [BURST_NB_WIDTH-1:0]   burst_cnt;
+    wire                        burst_done;
 
     reg  [CONFIG_DWIDTH-1:0]    cfg_length_r;
     reg                         cfg_valid_r;
