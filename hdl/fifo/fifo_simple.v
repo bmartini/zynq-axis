@@ -114,10 +114,10 @@ module fifo_simple
 
 
     // pop next
-    assign pop_ptr_nx   = pop_ptr + (pop & ~empty);
+    assign pop_ptr_nx   = pop_ptr + {{ADDR_WIDTH-1{1'b0}}, (pop & ~empty)};
 
     // push next
-    assign push_ptr_nx  = push_ptr + (push & ~full);
+    assign push_ptr_nx  = push_ptr + {{ADDR_WIDTH-1{1'b0}}, (push & ~full)};
 
 
     // registered population count.
