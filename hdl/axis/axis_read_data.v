@@ -24,9 +24,9 @@ module axis_read_data
   #(parameter
     BUF_AWIDTH      = 9,
     CONFIG_DWIDTH   = 32,
-    WIDTH_RATIO     = 16,
+    WIDTH_RATIO     = 2,
 
-    AXI_DATA_WIDTH  = 32,
+    AXI_DATA_WIDTH  = 64,
     DATA_WIDTH      = 32)
    (input                               clk,
     input                               rst,
