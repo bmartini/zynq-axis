@@ -51,7 +51,7 @@ module axis_serializer
 
     wire [2*DATA_NB-1:0]            token_nx;
     reg  [DATA_NB-1:0]              token;
-    reg  [DATA_NB-1:0]              serial_valid;
+    reg  [DATA_NB:0]                serial_valid;
     reg  [(DATA_WIDTH*DATA_NB)-1:0] serial_data;
     wire                            serial_start;
 
@@ -91,9 +91,9 @@ module axis_serializer
         if (rst) serial_valid <= 'b0;
         else if (down_ready) begin
 
-            serial_valid <= {serial_valid[0 +: DATA_NB-1], 1'b0};
+            serial_valid <= {serial_valid[0 +: DATA_NB], 1'b0};
             if (up_ready & up_valid) begin
-                serial_valid <= {serial_valid[0 +: DATA_NB-1], 1'b1};
+                serial_valid <= {serial_valid[0 +: DATA_NB], 1'b1};
             end
         end
 
@@ -107,7 +107,7 @@ module axis_serializer
     always @(posedge clk)
         if (rst) down_valid <= 1'b0;
         else if (down_ready) begin
-            down_valid <= |(serial_valid);
+            down_valid <= |(serial_valid[0 +: DATA_NB]);
         end
 
 
