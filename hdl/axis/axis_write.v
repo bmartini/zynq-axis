@@ -145,7 +145,7 @@ module axis_write
         cfg_cnt <= 'b0;
 
         if (c_state[C_CONFIG]) begin
-            cfg_cnt <= cfg_cnt + axis_data;
+            cfg_cnt <= cfg_cnt + {7'b0, axis_data};
         end
     end
 
