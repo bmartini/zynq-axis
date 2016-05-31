@@ -97,6 +97,9 @@ module axis_read
     wire [CONFIG_DWIDTH-1:0]            str_length;
     reg  [CONFIG_DWIDTH-1:0]            cfg_length;
     reg                                 cfg_enable;
+    wire                                id_valid;
+    wire                                addressed;
+    wire                                axis_data;
 
 
     /**
