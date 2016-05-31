@@ -112,8 +112,10 @@ module axis_write_data
 
 
     always @(posedge clk)
-        if      (state[IDLE])   str_cnt <= 'b0;
-        else if (axi_wready)    str_cnt <= str_cnt + buf_pop;
+        if (state[IDLE]) str_cnt <= 'b0;
+        else if (axi_wready & buf_pop) begin
+            str_cnt <= str_cnt + 'd1;
+        end
 
 
     always @(posedge clk)
