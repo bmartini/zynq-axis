@@ -156,44 +156,44 @@ module axis_addr
 
 
     always @* begin : ADDR_
-        state_nx <= 'b0;
+        state_nx = 'b0;
 
         case (1'b1)
             state[IDLE] : begin
                 if (cfg_valid) begin
-                    state_nx[SETUP] <= 1'b1;
+                    state_nx[SETUP] = 1'b1;
                 end
-                else state_nx[IDLE] <= 1'b1;
+                else state_nx[IDLE] = 1'b1;
             end
             state[SETUP] : begin
                 if (cfg_done & burst_en) begin
-                    state_nx[BURST] <= 1'b1;
+                    state_nx[BURST] = 1'b1;
                 end
                 else if (cfg_done & ~burst_en) begin
-                    state_nx[LAST] <= 1'b1;
+                    state_nx[LAST] = 1'b1;
                 end
-                else state_nx[SETUP] <= 1'b1;
+                else state_nx[SETUP] = 1'b1;
             end
             state[BURST] : begin
                 if (axi_aready & burst_done & last_en) begin
-                    state_nx[LAST] <= 1'b1;
+                    state_nx[LAST] = 1'b1;
                 end
                 else if (axi_aready & burst_done & ~last_en) begin
-                    state_nx[DONE] <= 1'b1;
+                    state_nx[DONE] = 1'b1;
                 end
-                else state_nx[BURST] <= 1'b1;
+                else state_nx[BURST] = 1'b1;
             end
             state[LAST] : begin
                 if (axi_aready) begin
-                    state_nx[DONE] <= 1'b1;
+                    state_nx[DONE] = 1'b1;
                 end
-                else state_nx[LAST] <= 1'b1;
+                else state_nx[LAST] = 1'b1;
             end
             state[DONE] : begin
-                state_nx[IDLE] <= 1'b1;
+                state_nx[IDLE] = 1'b1;
             end
             default : begin
-                state_nx[IDLE] <= 1'b1;
+                state_nx[IDLE] = 1'b1;
             end
         endcase
     end
