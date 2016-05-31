@@ -57,13 +57,15 @@ module axis_deserializer
 
     genvar ii;
 
-    reg  [DATA_NB-1:0] token;
+    wire [DATA_NB:0]    token_i;
+    reg  [DATA_NB-1:0]  token;
 
 
     /**
      * Implementation
      */
 
+    assign token_i  = {token, token[DATA_NB-1]};
 
     assign up_ready = down_ready;
 
@@ -83,7 +85,7 @@ module axis_deserializer
     always @(posedge clk)
         if (rst | (down_ready & up_last)) token <= 'b1;
         else if (down_ready & up_valid) begin
-            token <= {token, token[DATA_NB-1]};
+            token <= token_i[0 +: DATA_NB];
         end
 
 
