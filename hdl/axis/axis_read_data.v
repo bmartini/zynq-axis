@@ -100,7 +100,7 @@ module axis_read_data
 
     always @(posedge clk)
         if (rst)    valid <= 1'b0;
-        else        valid <= buf_pop & state[ACTIVE];
+        else        valid <= (buf_pop & state[ACTIVE]) | (valid & !ready);
 
 
     fifo_simple #(

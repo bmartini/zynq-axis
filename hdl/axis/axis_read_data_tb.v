@@ -185,25 +185,25 @@ module axis_read_data_tb;
     $display("RESET");
 `endif
 
-        repeat(6) @(negedge clk);
+        repeat(6) @(posedge clk);
         rst <= 1'b1;
-        repeat(6) @(negedge clk);
+        repeat(6) @(posedge clk);
         rst <= 1'b0;
-        @(negedge clk);
+        @(posedge clk);
 
 
 `ifdef TB_VERBOSE
     $display("send config id, start address and length");
 `endif
 
-        repeat(5) @(negedge clk);
+        repeat(5) @(posedge clk);
         cfg_length  <= 10;
         cfg_valid   <= 1'b1;
-        @(negedge clk)
+        @(posedge clk)
 
         cfg_length  <= 'b0;
         cfg_valid   <= 1'b0;
-        repeat(5) @(negedge clk);
+        repeat(5) @(posedge clk);
 
 
 `ifdef TB_VERBOSE
@@ -211,19 +211,23 @@ module axis_read_data_tb;
 `endif
 
         ready <= 1'b1;
-        repeat(5) @(negedge clk);
+        repeat(5) @(posedge clk);
 
         axi_rdata   <= {32'd8, 32'd7, 32'd6, 32'd5, 32'd4, 32'd3, 32'd2, 32'd1};
         axi_rvalid  <= 1'b1;
-        @(negedge clk);
+        @(posedge clk);
         axi_rdata   <= {32'd9, 32'd8, 32'd7, 32'd6, 32'd5, 32'd4, 32'd3, 32'd2};
-        while ( ~axi_rready) @(negedge clk);
+        while ( ~axi_rready) @(posedge clk);
         axi_rvalid  <= 1'b1;
-        @(negedge clk);
+        @(posedge clk);
         axi_rdata   <= 'b0;
         axi_rvalid  <= 1'b0;
+        repeat(5) @(posedge clk);
+        ready <= 1'b0;
+        repeat(5) @(posedge clk);
+        ready <= 1'b1;
 
-        repeat(15) @(negedge clk);
+        repeat(15) @(posedge clk);
 
 `ifdef TB_VERBOSE
     $display("END");
