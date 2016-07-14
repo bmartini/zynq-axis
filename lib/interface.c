@@ -13,8 +13,8 @@
 
 static void *cfg;
 static char *mem;
-unsigned int mem_start = 0;
-unsigned int mem_offset = 0;
+static unsigned int phy_addr = 0;
+static unsigned int mem_current = 0;
 
 int axis_init(const char *path)
 {
@@ -59,7 +59,7 @@ int axis_init(const char *path)
 
 	assert((sys_fd = fopen(sys_path, "r")) >= 0);
 
-	fscanf(sys_fd, "%x", &mem_start);
+	fscanf(sys_fd, "%x", &phy_addr);
 	fclose(sys_fd);
 
 	return 0;
@@ -127,19 +127,19 @@ void *mem_alloc(const int length, const int byte_nb)
 	assert(mem);
 
 	// calculate start of next array
-	int next_offset = mem_offset + mem_alloc_size(length, byte_nb);
+	int mem_next = mem_current + mem_alloc_size(length, byte_nb);
 
-	if (MEM_SIZE < next_offset) {
+	if (MEM_SIZE < mem_next) {
 		fprintf(stderr,
 			"ERROR <Out Of Memory> attempted total memory allocation: %i bytes\n",
-			next_offset);
+			mem_next);
 		assert(0);
 	}
 	// pointer to new array
-	void *ptr = &mem[mem_offset];
+	void *ptr = &mem[mem_current];
 
 	// update memory pointer to the next free area
-	mem_offset = next_offset;
+	mem_current = mem_next;
 
 	return ptr;
 }
@@ -174,7 +174,7 @@ void mem_alloc_state(void **start, unsigned int *offset)
 	assert(offset);
 
 	*start = &mem[0];
-	*offset = mem_offset;
+	*offset = mem_current;
 }
 
 unsigned int axis_port_id(const int index, const int dirc)
@@ -190,7 +190,7 @@ unsigned int axis_memory_addr(void *ptr)
 	assert(((char *)ptr) >= mem);
 	assert(((char *)ptr) < (mem + MEM_SIZE));
 
-	return (mem_start + ((unsigned int)ptr) - ((unsigned int)mem));
+	return (phy_addr + ((unsigned int)ptr) - ((unsigned int)mem));
 }
 
 unsigned int axis_stream_length(const int length, const int byte_nb)
