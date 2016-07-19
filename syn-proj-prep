@@ -23,6 +23,45 @@ Options:
 "
 }
 
+
+function included_files {
+	# limitations in regex, only one file name per include
+	# limitations in regex, file name cannot have double quote char
+
+	grep -o '^\s*`include\s*\".*\"' ${1} | awk -F\" '{print $(NF-1)}'
+}
+
+
+# argument assumed to be full path name
+function copy_with_dependencies {
+	# put file into set
+	fileset[$(basename ${1})]=${1}
+
+	# copy file to destination
+	cp -n "${1}" "${2}" || { echo "ERROR unable to copy file ${1}" ; exit 1; }
+
+	for file in $(included_files ${1})
+	do
+		# does the file exist in working dir
+		if [ ! -f ${file} ]
+		then
+			# find the first file that matches the name
+			file=$(find . -name ${file} -type f -print | head -n 1)
+
+			# zero length if file not found
+			test -z "${file}" && continue
+		fi
+
+		# checkout if file is in set that thus has been copied already
+		if [ ! ${fileset[$(basename ${file})]} ]
+		then :
+			# since has not been copied, call copy_with_dependencies on it
+			copy_with_dependencies ${file} ${2}
+		fi
+	done
+}
+
+
 function copy_for_synth() {
 	test -d syn/scratch/src || { echo "ERROR: directory 'syn/scratch/src' not found" ; exit 1; }
 
@@ -49,7 +88,22 @@ function copy_for_synth() {
 	test -d ip && { cp -r ip/* syn/scratch/; }
 
 	# populate IP Package hdl directories
-	test -d syn/scratch/ip_repo && { find syn/scratch/ip_repo -maxdepth 1 -mindepth 1 -type d | xargs -I D sh -c 'mkdir -p D/hdl; cp syn/scratch/src/* D/hdl/;'; }
+	if [ -d "syn/scratch/ip_repo" ]; then
+		cd syn/scratch
+
+		for PKG in ip_repo/*
+		do
+			declare -A fileset
+
+			mkdir -p "${PKG}"/hdl
+			TOPFILE=$(basename "${PKG%_1.0}").v
+			copy_with_dependencies "src/${TOPFILE}" "${PKG}/hdl/";
+
+			unset fileset
+		done
+
+		cd ../..
+	fi
 
 
 	echo "Source files copied to scratch directory"
