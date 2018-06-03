@@ -40,7 +40,7 @@ module axis_read_data
     output                              axi_rready,
 
     output      [DATA_WIDTH-1:0]        data,
-    output reg                          valid,
+    output                              valid,
     input                               ready
 );
 
@@ -50,9 +50,7 @@ module axis_read_data
 
     localparam
         IDLE    =  0,
-        ACTIVE  =  1,
-        WAIT    =  2,
-        DONE    =  3;
+        ACTIVE  =  1;
 
 
 `ifdef VERBOSE
@@ -64,25 +62,24 @@ module axis_read_data
      * Internal signals
      */
 
-    reg  [3:0]                  state;
-    reg  [3:0]                  state_nx;
+    reg  [1:0]                  state;
+    reg  [1:0]                  state_nx;
 
     reg  [CFG_DWIDTH-1:0]       str_cnt;
     reg  [CFG_DWIDTH-1:0]       str_length;
 
-    wire                        buf_pop;
-    wire                        buf_full;
+    wire                        buf_afull;
     wire                        buf_empty;
-    wire [DATA_WIDTH-1:0]       buf_data;
-    wire                        buf_valid;
+    wire [AXI_DATA_WIDTH-1:0]   buf_data;
+    reg                         buf_en;
+    wire                        buf_pop;
+    wire                        buf_rdy;
 
     /**
      * Implementation
      */
 
     assign cfg_ready = state[IDLE];
-
-    assign buf_pop = ~buf_empty & ready;
 
 
     always @(posedge clk)
@@ -93,35 +90,41 @@ module axis_read_data
 
     always @(posedge clk)
         if (state[IDLE]) str_cnt <= 'b0;
-        else if (buf_pop) begin
+        else if (valid) begin
             str_cnt <= str_cnt + 'b1;
         end
 
 
-    always @(posedge clk)
-        if (rst)    valid <= 1'b0;
-        else        valid <= buf_pop & state[ACTIVE];
+    assign axi_rready = ~buf_afull;
 
 
     fifo_simple #(
-        .DATA_WIDTH (DATA_WIDTH),
+        .DATA_WIDTH (AXI_DATA_WIDTH),
         .ADDR_WIDTH (BUF_AWIDTH))
     buffer_ (
         .clk        (clk),
-        .rst        (state[IDLE]),
+        .rst        (rst),
 
         .count      (),
         .empty      (buf_empty),
         .empty_a    (),
-        .full       (buf_full),
-        .full_a     (),
+        .full       (),
+        .full_a     (buf_afull),
 
-        .push_data  (buf_data),
-        .push       (buf_valid),
+        .push_data  (axi_rdata),
+        .push       (axi_rvalid & axi_rready),
 
-        .pop_data   (data),
+        .pop_data   (buf_data),
         .pop        (buf_pop)
     );
+
+
+    assign buf_pop = ~buf_en | buf_rdy;
+
+
+    always @(posedge clk)
+        if      (rst)       buf_en <= 1'b0;
+        else if (buf_pop)   buf_en <= ~buf_empty;
 
 
     axis_serializer #(
@@ -131,14 +134,17 @@ module axis_read_data
         .clk        (clk),
         .rst        (state[IDLE]),
 
-        .up_data    (axi_rdata),
-        .up_valid   (axi_rvalid),
-        .up_ready   (axi_rready),
+        .up_data    (buf_data),
+        .up_valid   (buf_en),
+        .up_ready   (buf_rdy),
 
-        .down_data  (buf_data),
-        .down_valid (buf_valid),
-        .down_ready ( ~buf_full)
+        .down_data  (data),
+        .down_valid (valid_i),
+        .down_ready (ready)
     );
+
+
+    assign valid = valid_i & state[ACTIVE];
 
 
     always @(posedge clk)
@@ -160,16 +166,10 @@ module axis_read_data
                 else state_nx[IDLE] = 1'b1;
             end
             state[ACTIVE] : begin
-                if (buf_pop & (str_length == str_cnt)) begin
-                    state_nx[WAIT] = 1'b1;
+                if (valid & (str_length == str_cnt)) begin
+                    state_nx[IDLE] = 1'b1;
                 end
                 else state_nx[ACTIVE] = 1'b1;
-            end
-            state[WAIT] : begin
-                state_nx[DONE] = 1'b1;
-            end
-            state[DONE] : begin
-                state_nx[IDLE] = 1'b1;
             end
             default : begin
                 state_nx[IDLE] = 1'b1;
