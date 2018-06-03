@@ -236,8 +236,8 @@ module axis_read
         .rst            (rst),
 
         .cfg_length     (cfg_length),
-        .cfg_valid      (cfg_enable),
-        .cfg_ready      (cfg_data_ready),
+        .cfg_val        (cfg_enable),
+        .cfg_rdy        (cfg_data_ready),
 
         .axi_rdata      (axi_rdata),
         .axi_rvalid     (axi_rvalid),

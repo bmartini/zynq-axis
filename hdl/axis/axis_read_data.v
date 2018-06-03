@@ -22,6 +22,7 @@
 
 module axis_read_data
   #(parameter
+    BUF_CFG_AWIDTH  = 5,
     BUF_AWIDTH      = 9,
     CFG_DWIDTH      = 32,
     WIDTH_RATIO     = 2,
@@ -32,8 +33,8 @@ module axis_read_data
     input                               rst,
 
     input       [CFG_DWIDTH-1:0]        cfg_length,
-    input                               cfg_valid,
-    output                              cfg_ready,
+    input                               cfg_val,
+    output                              cfg_rdy,
 
     input       [AXI_DATA_WIDTH-1:0]    axi_rdata,
     input                               axi_rvalid,
@@ -50,7 +51,8 @@ module axis_read_data
 
     localparam
         CONFIG  =  0,
-        ACTIVE  =  1;
+        SET     =  1,
+        ACTIVE  =  2;
 
 
 `ifdef VERBOSE
@@ -62,8 +64,13 @@ module axis_read_data
      * Internal signals
      */
 
-    reg  [1:0]                  state;
-    reg  [1:0]                  state_nx;
+    reg  [2:0]                  state;
+    reg  [2:0]                  state_nx;
+
+    wire                        cfg_buf_pop;
+    wire                        cfg_buf_full;
+    wire                        cfg_buf_empty;
+    wire [CFG_DWIDTH-1:0]       cfg_buf_length;
 
     reg  [CFG_DWIDTH-1:0]       str_cnt;
     reg  [CFG_DWIDTH-1:0]       str_length;
@@ -75,21 +82,46 @@ module axis_read_data
     wire                        buf_pop;
     wire                        buf_rdy;
 
+
     /**
      * Implementation
      */
 
-    assign cfg_ready = state[CONFIG];
+
+    assign cfg_rdy = ~cfg_buf_full;
+
+
+    fifo_simple #(
+        .DATA_WIDTH (CFG_DWIDTH),
+        .ADDR_WIDTH (BUF_CFG_AWIDTH))
+    cfg_buffer_ (
+        .clk        (clk),
+        .rst        (rst),
+
+        .count      (),
+        .empty      (cfg_buf_empty),
+        .empty_a    (),
+        .full       (cfg_buf_full),
+        .full_a     (),
+
+        .push_data  (cfg_length),
+        .push       (cfg_val),
+
+        .pop_data   (cfg_buf_length),
+        .pop        (cfg_buf_pop)
+    );
+
+    assign cfg_buf_pop = ~cfg_buf_empty & state[CONFIG];
 
 
     always @(posedge clk)
-        if (cfg_valid) begin
-            str_length <= cfg_length-1;
+        if (state[SET]) begin
+            str_length <= cfg_buf_length-1;
         end
 
 
     always @(posedge clk)
-        if (state[CONFIG]) str_cnt <= 'b0;
+        if (state[SET]) str_cnt <= 'b0;
         else if (valid) begin
             str_cnt <= str_cnt + 'b1;
         end
@@ -160,10 +192,13 @@ module axis_read_data
 
         case (1'b1)
             state[CONFIG] : begin
-                if (cfg_valid) begin
-                    state_nx[ACTIVE] = 1'b1;
+                if ( ~cfg_buf_empty) begin
+                    state_nx[SET] = 1'b1;
                 end
                 else state_nx[CONFIG] = 1'b1;
+            end
+            state[SET] : begin
+                state_nx[ACTIVE] = 1'b1;
             end
             state[ACTIVE] : begin
                 if (valid & (str_length == str_cnt)) begin
@@ -176,7 +211,6 @@ module axis_read_data
             end
         endcase
     end
-
 
 
 endmodule
