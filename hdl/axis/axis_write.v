@@ -216,8 +216,8 @@ module axis_write
 
         .cfg_address    (cfg_address),
         .cfg_length     (cfg_length),
-        .cfg_valid      (cfg_enable),
-        .cfg_ready      (cfg_addr_ready),
+        .cfg_val        (cfg_enable),
+        .cfg_rdy        (cfg_addr_ready),
 
         .axi_aready     (axi_awready),
         .axi_aaddr      (axi_awaddr),
