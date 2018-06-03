@@ -16,6 +16,7 @@
  */
 `ifndef _axis_addr_ `define _axis_addr_
 
+`define MIN(p,q) (p)<(q)?(p):(q)
 
 module axis_addr
   #(parameter
@@ -43,6 +44,7 @@ module axis_addr
      * Local parameters
      */
 
+    localparam AWIDTH           = `MIN(CFG_DWIDTH, AXI_ADDR_WIDTH);
     localparam BURST_NB_WIDTH   = CFG_DWIDTH-AXI_LEN_WIDTH;
     localparam BURST_LENGTH     = 1<<AXI_LEN_WIDTH;
 
@@ -80,7 +82,7 @@ module axis_addr
     reg                         cfg_valid_r;
     reg                         cfg_done;
 
-    reg  [CFG_DWIDTH-1:0]       axi_address;
+    reg  [AXI_ADDR_WIDTH-1:0]   axi_address;
 
 
     /**
@@ -130,7 +132,8 @@ module axis_addr
 
     always @(posedge clk)
         if (cfg_valid) begin
-            axi_address <= cfg_address;
+            axi_address             <= {AXI_ADDR_WIDTH{1'b0}};
+            axi_address[AWIDTH-1:0] <= cfg_address[AWIDTH-1:0];
         end
         else if (axi_aready & state[BURST]) begin
             // e.g. each burst has 256 long words & each long word has 32 bytes
@@ -200,5 +203,7 @@ module axis_addr
 
 
 endmodule
+
+`undef MIN
 
 `endif //  `ifndef _axis_addr_
