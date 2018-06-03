@@ -49,7 +49,7 @@ module axis_addr
     localparam BURST_LENGTH     = 1<<AXI_LEN_WIDTH;
 
     localparam
-        IDLE    =  0,
+        CONFIG  =  0,
         SETUP   =  1,
         BURST   =  2,
         LAST    =  3,
@@ -89,7 +89,7 @@ module axis_addr
      * Implementation
      */
 
-    assign cfg_ready    = state[IDLE];
+    assign cfg_ready = state[CONFIG];
 
 
     always @(posedge clk)
@@ -134,7 +134,7 @@ module axis_addr
 
 
     always @(posedge clk)
-        if (state[IDLE]) begin
+        if (state[CONFIG]) begin
             burst_cnt <= 'b0;
         end
         else if (axi_aready & state[BURST]) begin
@@ -147,8 +147,8 @@ module axis_addr
 
     always @(posedge clk)
         if (rst) begin
-            state       <= 'b0;
-            state[IDLE] <= 1'b1;
+            state           <= 'b0;
+            state[CONFIG]   <= 1'b1;
         end
         else state <= state_nx;
 
@@ -157,11 +157,11 @@ module axis_addr
         state_nx = 'b0;
 
         case (1'b1)
-            state[IDLE] : begin
+            state[CONFIG] : begin
                 if (cfg_valid) begin
                     state_nx[SETUP] = 1'b1;
                 end
-                else state_nx[IDLE] = 1'b1;
+                else state_nx[CONFIG] = 1'b1;
             end
             state[SETUP] : begin
                 if (cfg_done & burst_en) begin
@@ -188,10 +188,10 @@ module axis_addr
                 else state_nx[LAST] = 1'b1;
             end
             state[DONE] : begin
-                state_nx[IDLE] = 1'b1;
+                state_nx[CONFIG] = 1'b1;
             end
             default : begin
-                state_nx[IDLE] = 1'b1;
+                state_nx[CONFIG] = 1'b1;
             end
         endcase
     end
