@@ -91,14 +91,6 @@ module axis_addr
 
     assign cfg_ready    = state[IDLE];
 
-    assign axi_aaddr    = axi_address;
-
-    assign axi_alen     = state[BURST] ? (BURST_LENGTH-1) : last_nb;
-
-    assign axi_avalid   = state[BURST] | state[LAST];
-
-    assign burst_done   = (burst_nb == burst_cnt);
-
 
     always @(posedge clk)
         if (rst)    cfg_valid_r <= 1'b0;
@@ -148,6 +140,9 @@ module axis_addr
         else if (axi_aready & state[BURST]) begin
             burst_cnt <= burst_cnt + 1;
         end
+
+
+    assign burst_done = (burst_nb == burst_cnt);
 
 
     always @(posedge clk)
@@ -200,6 +195,13 @@ module axis_addr
             end
         endcase
     end
+
+
+    assign axi_aaddr    = axi_address;
+
+    assign axi_alen     = state[BURST] ? (BURST_LENGTH-1) : last_nb;
+
+    assign axi_avalid   = state[BURST] | state[LAST];
 
 
 endmodule
