@@ -55,7 +55,7 @@ module axis_write_data
     localparam BURST_LAST   = (1<<BURST_WIDTH)-1;
 
     localparam
-        IDLE    =  0,
+        CONFIG  =  0,
         ACTIVE  =  1,
         WAIT    =  2,
         DONE    =  3;
@@ -88,7 +88,7 @@ module axis_write_data
      * Implementation
      */
 
-    assign cfg_ready = state[IDLE];
+    assign cfg_ready = state[CONFIG];
 
     assign buf_pop = ~buf_empty & axi_wready;
 
@@ -101,25 +101,25 @@ module axis_write_data
 
     // use axi_wready as a stall signal
     always @(posedge clk)
-        if      (state[IDLE])   deser_valid <= 1'b0;
+        if      (state[CONFIG]) deser_valid <= 1'b0;
         else if (axi_wready)    deser_valid <= buf_pop;
 
 
     // half way mark ready flag
     always @(posedge clk)
-        if (state[IDLE])    ready <= 1'b0;
+        if (state[CONFIG])  ready <= 1'b0;
         else                ready <= ~|(buf_count[BUF_AWIDTH:BUF_AWIDTH-1]);
 
 
     always @(posedge clk)
-        if (state[IDLE]) str_cnt <= 'b0;
+        if (state[CONFIG]) str_cnt <= 'b0;
         else if (axi_wready & buf_pop) begin
             str_cnt <= str_cnt + 'd1;
         end
 
 
     always @(posedge clk)
-        if (state[IDLE]) deser_last <= 1'b0;
+        if (state[CONFIG]) deser_last <= 1'b0;
         else if (axi_wready) begin
             // trigger on last word in stream or last word in burst
             deser_last <= buf_pop &
@@ -132,7 +132,7 @@ module axis_write_data
         .ADDR_WIDTH (BUF_AWIDTH))
     buffer_ (
         .clk        (clk),
-        .rst        (state[IDLE]),
+        .rst        (state[CONFIG]),
 
         .count      (buf_count),
         .empty      (buf_empty),
@@ -153,7 +153,7 @@ module axis_write_data
         .DATA_WIDTH (DATA_WIDTH))
     deser_ (
         .clk        (clk),
-        .rst        (state[IDLE]),
+        .rst        (state[CONFIG]),
 
         .up_data    (deser_data),
         .up_valid   (deser_valid),
@@ -169,8 +169,8 @@ module axis_write_data
 
     always @(posedge clk)
         if (rst) begin
-            state       <= 'b0;
-            state[IDLE] <= 1'b1;
+            state           <= 'b0;
+            state[CONFIG]   <= 1'b1;
         end
         else state <= state_nx;
 
@@ -179,11 +179,11 @@ module axis_write_data
         state_nx = 'b0;
 
         case (1'b1)
-            state[IDLE] : begin
+            state[CONFIG] : begin
                 if (cfg_valid) begin
                     state_nx[ACTIVE] = 1'b1;
                 end
-                else state_nx[IDLE] = 1'b1;
+                else state_nx[CONFIG] = 1'b1;
             end
             state[ACTIVE] : begin
                 if (axi_wready & buf_pop & (str_length == str_cnt)) begin
@@ -198,10 +198,10 @@ module axis_write_data
                 else state_nx[WAIT] = 1'b1;
             end
             state[DONE] : begin
-                state_nx[IDLE] = 1'b1;
+                state_nx[CONFIG] = 1'b1;
             end
             default : begin
-                state_nx[IDLE] = 1'b1;
+                state_nx[CONFIG] = 1'b1;
             end
         endcase
     end
