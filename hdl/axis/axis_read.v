@@ -25,11 +25,11 @@ module axis_read
   #(parameter
     BUF_AWIDTH      = 9,
 
-    CONFIG_ID       = 1,
-    CONFIG_ADDR     = 23,
-    CONFIG_DATA     = 24,
-    CONFIG_AWIDTH   = 5,
-    CONFIG_DWIDTH   = 32,
+    CFG_ID          = 1,
+    CFG_ADDR        = 23,
+    CFG_DATA        = 24,
+    CFG_AWIDTH      = 5,
+    CFG_DWIDTH      = 32,
 
     AXI_LEN_WIDTH   = 8,
     AXI_ADDR_WIDTH  = 32,
@@ -38,8 +38,8 @@ module axis_read
    (input                               clk,
     input                               rst,
 
-    input       [CONFIG_AWIDTH-1:0]     cfg_addr,
-    input       [CONFIG_DWIDTH-1:0]     cfg_data,
+    input       [CFG_AWIDTH-1:0]        cfg_addr,
+    input       [CFG_DWIDTH-1:0]        cfg_data,
     input                               cfg_valid,
 
     input                               axi_arready,
@@ -61,8 +61,8 @@ module axis_read
      */
 
     localparam WIDTH_RATIO  = AXI_DATA_WIDTH/DATA_WIDTH;
-    localparam CONFIG_NB    = 2;
-    localparam STORE_WIDTH  = CONFIG_DWIDTH*CONFIG_NB;
+    localparam CFG_NB       = 2;
+    localparam STORE_WIDTH  = CFG_DWIDTH*CFG_NB;
 
     localparam
         C_IDLE      = 0,
@@ -87,17 +87,17 @@ module axis_read
     wire                                cfg_addr_ready;
     wire                                cfg_data_ready;
 
-    reg  [CONFIG_AWIDTH-1:0]            cfg_addr_r;
-    reg  [CONFIG_DWIDTH-1:0]            cfg_data_r;
+    reg  [CFG_AWIDTH-1:0]               cfg_addr_r;
+    reg  [CFG_DWIDTH-1:0]               cfg_data_r;
     reg                                 cfg_valid_r;
-    wire [STORE_WIDTH+CONFIG_DWIDTH-1:0]    cfg_store_i;
+    wire [STORE_WIDTH+CFG_DWIDTH-1:0]   cfg_store_i;
     reg  [STORE_WIDTH-1:0]              cfg_store;
     reg  [7:0]                          cfg_cnt;
 
-    wire [CONFIG_DWIDTH-1:0]            start_addr;
-    reg  [CONFIG_DWIDTH-1:0]            cfg_address;
-    wire [CONFIG_DWIDTH-1:0]            str_length;
-    reg  [CONFIG_DWIDTH-1:0]            cfg_length;
+    wire [CFG_DWIDTH-1:0]               start_addr;
+    reg  [CFG_DWIDTH-1:0]               cfg_address;
+    wire [CFG_DWIDTH-1:0]               str_length;
+    reg  [CFG_DWIDTH-1:0]               cfg_length;
     reg                                 cfg_enable;
     wire                                id_valid;
     wire                                addressed;
@@ -110,15 +110,15 @@ module axis_read
 
     assign cfg_store_i  = {cfg_store, cfg_data_r};
 
-    assign start_addr   = cfg_store[CONFIG_DWIDTH +: CONFIG_DWIDTH];
+    assign start_addr   = cfg_store[CFG_DWIDTH +: CFG_DWIDTH];
 
-    assign str_length   = cfg_store[0 +: CONFIG_DWIDTH];
+    assign str_length   = cfg_store[0 +: CFG_DWIDTH];
 
-    assign id_valid     = (CONFIG_ID == cfg_data_r);
+    assign id_valid     = (CFG_ID == cfg_data_r);
 
-    assign addressed    = (CONFIG_ADDR == cfg_addr_r) & cfg_valid_r;
+    assign addressed    = (CFG_ADDR == cfg_addr_r) & cfg_valid_r;
 
-    assign axis_data    = (CONFIG_DATA == cfg_addr_r) & cfg_valid_r;
+    assign axis_data    = (CFG_DATA == cfg_addr_r) & cfg_valid_r;
 
 
     // register for improved timing
@@ -181,7 +181,7 @@ module axis_read
                 else c_state_nx[C_IDLE] = 1'b1;
             end
             c_state[C_CONFIG] : begin
-                if (axis_data & ((CONFIG_NB-1) <= cfg_cnt)) begin
+                if (axis_data & ((CFG_NB-1) <= cfg_cnt)) begin
                     c_state_nx[C_WAIT] = 1'b1;
                 end
                 else c_state_nx[C_CONFIG] = 1'b1;
@@ -203,7 +203,7 @@ module axis_read
 
 
     axis_addr #(
-        .CONFIG_DWIDTH  (CONFIG_DWIDTH),
+        .CFG_DWIDTH     (CFG_DWIDTH),
         .WIDTH_RATIO    (WIDTH_RATIO),
         .CONVERT_SHIFT  ($clog2(WIDTH_RATIO)),
         .AXI_LEN_WIDTH  (AXI_LEN_WIDTH),
@@ -227,7 +227,7 @@ module axis_read
 
     axis_read_data #(
         .BUF_AWIDTH     (BUF_AWIDTH),
-        .CONFIG_DWIDTH  (CONFIG_DWIDTH),
+        .CFG_DWIDTH     (CFG_DWIDTH),
         .WIDTH_RATIO    (WIDTH_RATIO),
         .AXI_DATA_WIDTH (AXI_DATA_WIDTH),
         .DATA_WIDTH     (DATA_WIDTH))

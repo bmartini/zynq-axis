@@ -210,12 +210,12 @@ module axis_loopback #(
 
     axis #(
         .BUF_AWIDTH     (9),
-        .CONFIG_ID_RD   (1),
-        .CONFIG_ID_WR   (2),
-        .CONFIG_ADDR    (CFG_AXIS_ADDR),
-        .CONFIG_DATA    (CFG_AXIS_DATA),
-        .CONFIG_AWIDTH  (CFG_AWIDTH),
-        .CONFIG_DWIDTH  (CFG_DWIDTH),
+        .CFG_ID_RD      (1),
+        .CFG_ID_WR      (2),
+        .CFG_ADDR       (CFG_AXIS_ADDR),
+        .CFG_DATA       (CFG_AXIS_DATA),
+        .CFG_AWIDTH     (CFG_AWIDTH),
+        .CFG_DWIDTH     (CFG_DWIDTH),
         .STREAM_WIDTH   (SYS_DWIDTH),
         .AXI_ID_WIDTH   (C_M00_AXI_ID_WIDTH),
         .AXI_LEN_WIDTH  (C_M00_AXI_BURST_LEN),

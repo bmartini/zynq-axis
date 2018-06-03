@@ -21,12 +21,12 @@ module axis #(
     parameter
     BUF_AWIDTH      = 9,
 
-    CONFIG_ID_WR    = 1,
-    CONFIG_ID_RD    = 2,
-    CONFIG_ADDR     = 23,
-    CONFIG_DATA     = 24,
-    CONFIG_AWIDTH   = 5,
-    CONFIG_DWIDTH   = 32,
+    CFG_ID_WR       = 1,
+    CFG_ID_RD       = 2,
+    CFG_ADDR        = 23,
+    CFG_DATA        = 24,
+    CFG_AWIDTH      = 5,
+    CFG_DWIDTH      = 32,
 
     STREAM_WIDTH    = 32,
 
@@ -38,8 +38,8 @@ module axis #(
     input                               rst,
 
     // configuation
-    input       [CONFIG_AWIDTH-1:0]     cfg_addr,
-    input       [CONFIG_DWIDTH-1:0]     cfg_data,
+    input       [CFG_AWIDTH-1:0]        cfg_addr,
+    input       [CFG_DWIDTH-1:0]        cfg_data,
     input                               cfg_valid,
 
     // stream interface
@@ -148,11 +148,11 @@ module axis #(
     axis_write #(
         .BUF_AWIDTH     (BUF_AWIDTH),
 
-        .CONFIG_ID      (CONFIG_ID_WR),
-        .CONFIG_ADDR    (CONFIG_ADDR),
-        .CONFIG_DATA    (CONFIG_DATA),
-        .CONFIG_AWIDTH  (CONFIG_AWIDTH),
-        .CONFIG_DWIDTH  (CONFIG_DWIDTH),
+        .CFG_ID         (CFG_ID_WR),
+        .CFG_ADDR       (CFG_ADDR),
+        .CFG_DATA       (CFG_DATA),
+        .CFG_AWIDTH     (CFG_AWIDTH),
+        .CFG_DWIDTH     (CFG_DWIDTH),
 
         .AXI_LEN_WIDTH  (AXI_LEN_WIDTH),
         .AXI_ADDR_WIDTH (AXI_ADDR_WIDTH),
@@ -185,11 +185,11 @@ module axis #(
     axis_read #(
         .BUF_AWIDTH     (BUF_AWIDTH),
 
-        .CONFIG_ID      (CONFIG_ID_RD),
-        .CONFIG_ADDR    (CONFIG_ADDR),
-        .CONFIG_DATA    (CONFIG_DATA),
-        .CONFIG_AWIDTH  (CONFIG_AWIDTH),
-        .CONFIG_DWIDTH  (CONFIG_DWIDTH),
+        .CFG_ID         (CFG_ID_RD),
+        .CFG_ADDR       (CFG_ADDR),
+        .CFG_DATA       (CFG_DATA),
+        .CFG_AWIDTH     (CFG_AWIDTH),
+        .CFG_DWIDTH     (CFG_DWIDTH),
 
         .AXI_LEN_WIDTH  (AXI_LEN_WIDTH),
         .AXI_ADDR_WIDTH (AXI_ADDR_WIDTH),

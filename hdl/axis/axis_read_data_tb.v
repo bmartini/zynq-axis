@@ -53,7 +53,7 @@ module axis_read_data_tb;
     localparam STREAM_LENGTH    = (256*8*2)-4;
 
     localparam BUF_AWIDTH       = 4;
-    localparam CONFIG_DWIDTH    = 32;
+    localparam CFG_DWIDTH       = 32;
     localparam WIDTH_RATIO      = 8;
     localparam AXI_DATA_WIDTH   = 256;
     localparam DATA_WIDTH       = 32;
@@ -70,7 +70,7 @@ module axis_read_data_tb;
 
     reg                             rst;
 
-    reg     [CONFIG_DWIDTH-1:0]     cfg_length;
+    reg     [CFG_DWIDTH-1:0]        cfg_length;
     reg                             cfg_valid;
     wire                            cfg_ready;
 
@@ -89,7 +89,7 @@ module axis_read_data_tb;
 
     axis_read_data #(
         .BUF_AWIDTH     (BUF_AWIDTH),
-        .CONFIG_DWIDTH  (CONFIG_DWIDTH),
+        .CFG_DWIDTH     (CFG_DWIDTH),
         .WIDTH_RATIO    (WIDTH_RATIO),
 
         .AXI_DATA_WIDTH (AXI_DATA_WIDTH),

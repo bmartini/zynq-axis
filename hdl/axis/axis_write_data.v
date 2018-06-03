@@ -23,7 +23,7 @@
 module axis_write_data
   #(parameter
     BUF_AWIDTH      = 9,
-    CONFIG_DWIDTH   = 32,
+    CFG_DWIDTH      = 32,
     WIDTH_RATIO     = 2,
     CONVERT_SHIFT   = 3,
 
@@ -33,7 +33,7 @@ module axis_write_data
    (input                               clk,
     input                               rst,
 
-    input       [CONFIG_DWIDTH-1:0]     cfg_length,
+    input       [CFG_DWIDTH-1:0]        cfg_length,
     input                               cfg_valid,
     output                              cfg_ready,
 
@@ -73,8 +73,8 @@ module axis_write_data
     reg  [3:0]                  state;
     reg  [3:0]                  state_nx;
 
-    reg  [CONFIG_DWIDTH-1:0]    str_cnt;
-    reg  [CONFIG_DWIDTH-1:0]    str_length;
+    reg  [CFG_DWIDTH-1:0]       str_cnt;
+    reg  [CFG_DWIDTH-1:0]       str_length;
 
     wire [BUF_AWIDTH:0]         buf_count;
     wire                        buf_pop;

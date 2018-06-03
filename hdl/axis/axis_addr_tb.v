@@ -50,7 +50,7 @@ module axis_addr_tb;
      * Local parameters
      */
 
-    localparam CONFIG_DWIDTH    = 32;
+    localparam CFG_DWIDTH       = 32;
     localparam WIDTH_RATIO      = 16;
     localparam AXI_LEN_WIDTH    = 8;
     localparam AXI_ADDR_WIDTH   = 32;
@@ -67,8 +67,8 @@ module axis_addr_tb;
 
     reg                             rst;
 
-    reg     [CONFIG_DWIDTH-1:0]     cfg_address;
-    reg     [CONFIG_DWIDTH-1:0]     cfg_length;
+    reg     [CFG_DWIDTH-1:0]        cfg_address;
+    reg     [CFG_DWIDTH-1:0]        cfg_length;
     reg                             cfg_valid;
     wire                            cfg_ready;
 
@@ -83,7 +83,7 @@ module axis_addr_tb;
      */
 
     axis_addr #(
-        .CONFIG_DWIDTH  (CONFIG_DWIDTH),
+        .CFG_DWIDTH     (CFG_DWIDTH),
         .WIDTH_RATIO    (WIDTH_RATIO),
         .CONVERT_SHIFT  ($clog2(WIDTH_RATIO)),
         .AXI_LEN_WIDTH  (AXI_LEN_WIDTH),

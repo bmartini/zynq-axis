@@ -19,7 +19,7 @@
 
 module axis_addr
   #(parameter
-    CONFIG_DWIDTH   = 32,
+    CFG_DWIDTH      = 32,
     WIDTH_RATIO     = 16,
     CONVERT_SHIFT   = 3,
     AXI_LEN_WIDTH   = 8,
@@ -28,8 +28,8 @@ module axis_addr
    (input                               clk,
     input                               rst,
 
-    input       [CONFIG_DWIDTH-1:0]     cfg_address,
-    input       [CONFIG_DWIDTH-1:0]     cfg_length,
+    input       [CFG_DWIDTH-1:0]        cfg_address,
+    input       [CFG_DWIDTH-1:0]        cfg_length,
     input                               cfg_valid,
     output                              cfg_ready,
 
@@ -43,7 +43,7 @@ module axis_addr
      * Local parameters
      */
 
-    localparam BURST_NB_WIDTH   = CONFIG_DWIDTH-AXI_LEN_WIDTH;
+    localparam BURST_NB_WIDTH   = CFG_DWIDTH-AXI_LEN_WIDTH;
     localparam BURST_LENGTH     = 1<<AXI_LEN_WIDTH;
 
     localparam
@@ -76,11 +76,11 @@ module axis_addr
     reg  [BURST_NB_WIDTH-1:0]   burst_cnt;
     wire                        burst_done;
 
-    reg  [CONFIG_DWIDTH-1:0]    cfg_length_r;
+    reg  [CFG_DWIDTH-1:0]       cfg_length_r;
     reg                         cfg_valid_r;
     reg                         cfg_done;
 
-    reg  [CONFIG_DWIDTH-1:0]    axi_address;
+    reg  [CFG_DWIDTH-1:0]       axi_address;
 
 
     /**

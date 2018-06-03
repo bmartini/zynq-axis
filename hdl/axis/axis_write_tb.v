@@ -54,11 +54,11 @@ module axis_write_tb;
 
     localparam BUF_AWIDTH       = 4;
 
-    localparam CONFIG_ID        = 1;
-    localparam CONFIG_ADDR      = 23;
-    localparam CONFIG_DATA      = 24;
-    localparam CONFIG_AWIDTH    = 5;
-    localparam CONFIG_DWIDTH    = 32;
+    localparam CFG_ID           = 1;
+    localparam CFG_ADDR         = 23;
+    localparam CFG_DATA         = 24;
+    localparam CFG_AWIDTH       = 5;
+    localparam CFG_DWIDTH       = 32;
 
     localparam AXI_LEN_WIDTH    = 2;
     localparam AXI_ADDR_WIDTH   = 32;
@@ -77,8 +77,8 @@ module axis_write_tb;
 
     reg                             rst;
 
-    reg     [CONFIG_AWIDTH-1:0]     cfg_addr;
-    reg     [CONFIG_DWIDTH-1:0]     cfg_data;
+    reg     [CFG_AWIDTH-1:0]        cfg_addr;
+    reg     [CFG_DWIDTH-1:0]        cfg_data;
     reg                             cfg_valid;
 
     reg                             axi_awready;
@@ -103,11 +103,11 @@ module axis_write_tb;
     axis_write #(
         .BUF_AWIDTH     (BUF_AWIDTH),
 
-        .CONFIG_ID      (CONFIG_ID),
-        .CONFIG_ADDR    (CONFIG_ADDR),
-        .CONFIG_DATA    (CONFIG_DATA),
-        .CONFIG_AWIDTH  (CONFIG_AWIDTH),
-        .CONFIG_DWIDTH  (CONFIG_DWIDTH),
+        .CFG_ID         (CFG_ID),
+        .CFG_ADDR       (CFG_ADDR),
+        .CFG_DATA       (CFG_DATA),
+        .CFG_AWIDTH     (CFG_AWIDTH),
+        .CFG_DWIDTH     (CFG_DWIDTH),
 
         .AXI_LEN_WIDTH  (AXI_LEN_WIDTH),
         .AXI_ADDR_WIDTH (AXI_ADDR_WIDTH),
@@ -240,8 +240,8 @@ module axis_write_tb;
 `endif
 
         repeat(5) @(negedge clk);
-        cfg_addr    <= CONFIG_ADDR;
-        cfg_data    <= CONFIG_ID;
+        cfg_addr    <= CFG_ADDR;
+        cfg_data    <= CFG_ID;
         cfg_valid   <= 1'b1;
         @(negedge clk)
 
@@ -250,7 +250,7 @@ module axis_write_tb;
         cfg_valid   <= 1'b0;
         repeat(5) @(negedge clk);
 
-        cfg_addr    <= CONFIG_DATA;
+        cfg_addr    <= CFG_DATA;
         cfg_data    <= 4;
         cfg_valid   <= 1'b1;
         @(negedge clk)
@@ -260,7 +260,7 @@ module axis_write_tb;
         cfg_valid   <= 1'b0;
         repeat(5) @(negedge clk);
 
-        cfg_addr    <= CONFIG_DATA;
+        cfg_addr    <= CFG_DATA;
         cfg_data    <= 8;
         cfg_valid   <= 1'b1;
         @(negedge clk)
@@ -320,17 +320,17 @@ module axis_write_tb;
 `endif
 
         repeat(5) @(negedge clk);
-        cfg_addr    <= CONFIG_ADDR;
-        cfg_data    <= CONFIG_ID;
+        cfg_addr    <= CFG_ADDR;
+        cfg_data    <= CFG_ID;
         cfg_valid   <= 1'b1;
         @(negedge clk)
 
-        cfg_addr    <= CONFIG_DATA;
+        cfg_addr    <= CFG_DATA;
         cfg_data    <= 4;
         cfg_valid   <= 1'b1;
         @(negedge clk)
 
-        cfg_addr    <= CONFIG_DATA;
+        cfg_addr    <= CFG_DATA;
         cfg_data    <= 8;
         cfg_valid   <= 1'b1;
         @(negedge clk)
@@ -375,17 +375,17 @@ module axis_write_tb;
 `endif
 
         repeat(5) @(negedge clk);
-        cfg_addr    <= CONFIG_ADDR;
-        cfg_data    <= CONFIG_ID;
+        cfg_addr    <= CFG_ADDR;
+        cfg_data    <= CFG_ID;
         cfg_valid   <= 1'b1;
         @(negedge clk)
 
-        cfg_addr    <= CONFIG_DATA;
+        cfg_addr    <= CFG_DATA;
         cfg_data    <= 255;
         cfg_valid   <= 1'b1;
         @(negedge clk)
 
-        cfg_addr    <= CONFIG_DATA;
+        cfg_addr    <= CFG_DATA;
         cfg_data    <= STREAM_LENGTH;
         cfg_valid   <= 1'b1;
         @(negedge clk)

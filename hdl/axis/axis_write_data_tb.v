@@ -53,7 +53,7 @@ module axis_write_data_tb;
     localparam STREAM_LENGTH    = (256*8*2)-4;
 
     localparam BUF_AWIDTH       = 4;
-    localparam CONFIG_DWIDTH    = 32;
+    localparam CFG_DWIDTH       = 32;
 
     localparam AXI_LEN_WIDTH    = 4;
     localparam AXI_DATA_WIDTH   = 64;
@@ -75,7 +75,7 @@ module axis_write_data_tb;
 
     wire                            done;
 
-    reg     [CONFIG_DWIDTH-1:0]     cfg_length;
+    reg     [CFG_DWIDTH-1:0]        cfg_length;
     reg                             cfg_valid;
     wire                            cfg_ready;
 
@@ -95,7 +95,7 @@ module axis_write_data_tb;
 
     axis_write_data #(
         .BUF_AWIDTH     (BUF_AWIDTH),
-        .CONFIG_DWIDTH  (CONFIG_DWIDTH),
+        .CFG_DWIDTH     (CFG_DWIDTH),
         .WIDTH_RATIO    (WIDTH_RATIO),
         .CONVERT_SHIFT  ($clog2(WIDTH_RATIO)),
 
