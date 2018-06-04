@@ -18,14 +18,13 @@
 
 
 `include "fifo_simple.v"
-`include "axis_deserializer.v"
+`include "axis_gbox.v"
 
 module axis_write_data
   #(parameter
     BUF_CFG_AWIDTH  = 5,
     BUF_AWIDTH      = 9,
     CFG_DWIDTH      = 32,
-    WIDTH_RATIO     = 2,
     CONVERT_SHIFT   = 3,
 
     AXI_LEN_WIDTH   = 8,
@@ -179,22 +178,22 @@ module axis_write_data
         end
 
 
-    axis_deserializer #(
-        .DATA_NB    (WIDTH_RATIO),
-        .DATA_WIDTH (DATA_WIDTH))
+    axis_gbox #(
+        .DATA_UP_WIDTH  (DATA_WIDTH),
+        .DATA_DN_WIDTH  (AXI_DATA_WIDTH))
     deser_ (
         .clk        (clk),
         .rst        (rst),
 
         .up_data    (deser_data),
-        .up_valid   (deser_en),
-        .up_ready   (deser_rdy),
         .up_last    (deser_last),
+        .up_val     (deser_en),
+        .up_rdy     (deser_rdy),
 
-        .down_data  (axi_wdata),
-        .down_valid (axi_wvalid),
-        .down_ready (axi_wready),
-        .down_last  (axi_wlast)
+        .dn_data    (axi_wdata),
+        .dn_last    (axi_wlast),
+        .dn_val     (axi_wvalid),
+        .dn_rdy     (axi_wready)
     );
 
 

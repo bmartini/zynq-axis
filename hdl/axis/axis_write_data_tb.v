@@ -73,8 +73,6 @@ module axis_write_data_tb;
 
     reg                             rst;
 
-    wire                            done;
-
     reg     [CFG_DWIDTH-1:0]        cfg_length;
     reg                             cfg_val;
     wire                            cfg_rdy;
@@ -96,7 +94,6 @@ module axis_write_data_tb;
     axis_write_data #(
         .BUF_AWIDTH     (BUF_AWIDTH),
         .CFG_DWIDTH     (CFG_DWIDTH),
-        .WIDTH_RATIO    (WIDTH_RATIO),
         .CONVERT_SHIFT  ($clog2(WIDTH_RATIO)),
 
         .AXI_LEN_WIDTH  (AXI_LEN_WIDTH),
