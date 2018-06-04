@@ -22,6 +22,7 @@
 
 module axis_write_data
   #(parameter
+    BUF_CFG_AWIDTH  = 5,
     BUF_AWIDTH      = 9,
     CFG_DWIDTH      = 32,
     WIDTH_RATIO     = 2,
@@ -34,8 +35,8 @@ module axis_write_data
     input                               rst,
 
     input       [CFG_DWIDTH-1:0]        cfg_length,
-    input                               cfg_valid,
-    output                              cfg_ready,
+    input                               cfg_val,
+    output                              cfg_rdy,
 
     output                              axi_wlast,
     output      [AXI_DATA_WIDTH-1:0]    axi_wdata,
@@ -56,9 +57,10 @@ module axis_write_data
 
     localparam
         CONFIG  =  0,
-        ACTIVE  =  1,
-        WAIT    =  2,
-        DONE    =  3;
+        SET     =  1,
+        ACTIVE  =  2,
+        WAIT    =  3,
+        DONE    =  4;
 
 
 `ifdef VERBOSE
@@ -70,8 +72,13 @@ module axis_write_data
      * Internal signals
      */
 
-    reg  [3:0]                  state;
-    reg  [3:0]                  state_nx;
+    reg  [4:0]                  state;
+    reg  [4:0]                  state_nx;
+
+    wire                        cfg_buf_pop;
+    wire                        cfg_buf_full;
+    wire                        cfg_buf_empty;
+    wire [CFG_DWIDTH-1:0]       cfg_buf_length;
 
     reg  [CFG_DWIDTH-1:0]       str_cnt;
     reg  [CFG_DWIDTH-1:0]       str_length;
@@ -88,14 +95,42 @@ module axis_write_data
      * Implementation
      */
 
-    assign cfg_ready = state[CONFIG];
+    assign cfg_rdy = ~cfg_buf_full;
 
-    assign buf_pop = ~buf_empty & axi_wready;
+
+    fifo_simple #(
+        .DATA_WIDTH (CFG_DWIDTH),
+        .ADDR_WIDTH (BUF_CFG_AWIDTH))
+    cfg_buffer_ (
+        .clk        (clk),
+        .rst        (rst),
+
+        .count      (),
+        .empty      (cfg_buf_empty),
+        .empty_a    (),
+        .full       (cfg_buf_full),
+        .full_a     (),
+
+        .push_data  (cfg_length),
+        .push       (cfg_val),
+
+        .pop_data   (cfg_buf_length),
+        .pop        (cfg_buf_pop)
+    );
+
+    assign cfg_buf_pop = ~cfg_buf_empty & state[CONFIG];
 
 
     always @(posedge clk)
-        if (cfg_valid) begin
-            str_length <= cfg_length-1;
+        if (state[SET]) begin
+            str_length <= cfg_buf_length-'b1;
+        end
+
+
+    always @(posedge clk)
+        if (state[SET]) str_cnt <= 'b0;
+        else if (axi_wready & buf_pop) begin
+            str_cnt <= str_cnt + 'b1;
         end
 
 
@@ -103,19 +138,6 @@ module axis_write_data
     always @(posedge clk)
         if      (state[CONFIG]) deser_valid <= 1'b0;
         else if (axi_wready)    deser_valid <= buf_pop;
-
-
-    // half way mark ready flag
-    always @(posedge clk)
-        if (state[CONFIG])  ready <= 1'b0;
-        else                ready <= ~|(buf_count[BUF_AWIDTH:BUF_AWIDTH-1]);
-
-
-    always @(posedge clk)
-        if (state[CONFIG]) str_cnt <= 'b0;
-        else if (axi_wready & buf_pop) begin
-            str_cnt <= str_cnt + 'd1;
-        end
 
 
     always @(posedge clk)
@@ -127,12 +149,18 @@ module axis_write_data
         end
 
 
+    // half way mark ready flag
+    always @(posedge clk)
+        if (state[CONFIG])  ready <= 1'b0;
+        else                ready <= ~|(buf_count[BUF_AWIDTH:BUF_AWIDTH-1]);
+
+
     fifo_simple #(
         .DATA_WIDTH (DATA_WIDTH),
         .ADDR_WIDTH (BUF_AWIDTH))
     buffer_ (
         .clk        (clk),
-        .rst        (state[CONFIG]),
+        .rst        (rst),
 
         .count      (buf_count),
         .empty      (buf_empty),
@@ -146,6 +174,9 @@ module axis_write_data
         .pop_data   (deser_data),
         .pop        (buf_pop)
     );
+
+
+    assign buf_pop = ~buf_empty & axi_wready;
 
 
     axis_deserializer #(
@@ -180,10 +211,13 @@ module axis_write_data
 
         case (1'b1)
             state[CONFIG] : begin
-                if (cfg_valid) begin
-                    state_nx[ACTIVE] = 1'b1;
+                if ( ~cfg_buf_empty) begin
+                    state_nx[SET] = 1'b1;
                 end
                 else state_nx[CONFIG] = 1'b1;
+            end
+            state[SET] : begin
+                state_nx[ACTIVE] = 1'b1;
             end
             state[ACTIVE] : begin
                 if (axi_wready & buf_pop & (str_length == str_cnt)) begin

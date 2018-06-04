@@ -239,8 +239,8 @@ module axis_write
         .rst            (rst),
 
         .cfg_length     (cfg_length),
-        .cfg_valid      (cfg_enable),
-        .cfg_ready      (cfg_data_ready),
+        .cfg_val        (cfg_enable),
+        .cfg_rdy        (cfg_data_ready),
 
         .axi_wlast      (axi_wlast),
         .axi_wdata      (axi_wdata),
