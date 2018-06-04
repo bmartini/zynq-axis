@@ -3,7 +3,7 @@
  *  axis_write
  *
  * Description:
- *  The axis_write takes a system stream an translate it to the axi data
+ *  The axis_write takes a system stream and translates it to the axi data
  *  channel protocol.
  *
  * Test bench:
@@ -23,6 +23,7 @@
 
 module axis_write
   #(parameter
+    BUF_CFG_AWIDTH  = 5,
     BUF_AWIDTH      = 9,
 
     CFG_ID          = 1,
@@ -204,6 +205,7 @@ module axis_write
 
 
     axis_addr #(
+        .BUF_CFG_AWIDTH (BUF_CFG_AWIDTH),
         .CFG_DWIDTH     (CFG_DWIDTH),
         .WIDTH_RATIO    (WIDTH_RATIO),
         .CONVERT_SHIFT  ($clog2(WIDTH_RATIO)),
@@ -227,9 +229,9 @@ module axis_write
 
 
     axis_write_data #(
+        .BUF_CFG_AWIDTH (BUF_CFG_AWIDTH),
         .BUF_AWIDTH     (BUF_AWIDTH),
         .CFG_DWIDTH     (CFG_DWIDTH),
-        .WIDTH_RATIO    (WIDTH_RATIO),
         .CONVERT_SHIFT  ($clog2(WIDTH_RATIO)),
         .AXI_LEN_WIDTH  (AXI_LEN_WIDTH),
         .AXI_DATA_WIDTH (AXI_DATA_WIDTH),

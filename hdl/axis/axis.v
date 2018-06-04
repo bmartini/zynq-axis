@@ -19,6 +19,7 @@
 
 module axis #(
     parameter
+    BUF_CFG_AWIDTH  = 5,
     BUF_AWIDTH      = 9,
 
     CFG_ID_WR       = 1,
@@ -146,6 +147,7 @@ module axis #(
 
 
     axis_write #(
+        .BUF_CFG_AWIDTH (BUF_CFG_AWIDTH),
         .BUF_AWIDTH     (BUF_AWIDTH),
 
         .CFG_ID         (CFG_ID_WR),
@@ -183,6 +185,7 @@ module axis #(
 
 
     axis_read #(
+        .BUF_CFG_AWIDTH (BUF_CFG_AWIDTH),
         .BUF_AWIDTH     (BUF_AWIDTH),
 
         .CFG_ID         (CFG_ID_RD),

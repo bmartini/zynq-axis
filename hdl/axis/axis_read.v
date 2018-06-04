@@ -23,6 +23,7 @@
 
 module axis_read
   #(parameter
+    BUF_CFG_AWIDTH  = 5,
     BUF_AWIDTH      = 9,
 
     CFG_ID          = 1,
@@ -204,6 +205,7 @@ module axis_read
 
 
     axis_addr #(
+        .BUF_CFG_AWIDTH (BUF_CFG_AWIDTH),
         .CFG_DWIDTH     (CFG_DWIDTH),
         .WIDTH_RATIO    (WIDTH_RATIO),
         .CONVERT_SHIFT  ($clog2(WIDTH_RATIO)),
@@ -227,6 +229,7 @@ module axis_read
 
 
     axis_read_data #(
+        .BUF_CFG_AWIDTH (BUF_CFG_AWIDTH),
         .BUF_AWIDTH     (BUF_AWIDTH),
         .CFG_DWIDTH     (CFG_DWIDTH),
         .AXI_DATA_WIDTH (AXI_DATA_WIDTH),
