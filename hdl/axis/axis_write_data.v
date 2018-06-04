@@ -88,11 +88,13 @@ module axis_write_data
 
     reg                         deser_last;
     wire [DATA_WIDTH-1:0]       deser_data;
-    reg                         deser_valid;
+    reg                         deser_en;
+    wire                        deser_rdy;
 
     /**
      * Implementation
      */
+
 
     assign cfg_rdy = ~cfg_buf_full;
 
@@ -126,32 +128,10 @@ module axis_write_data
         end
 
 
-    always @(posedge clk)
-        if (state[SET]) str_cnt <= 'b0;
-        else if (axi_wready & buf_pop) begin
-            str_cnt <= str_cnt + 'b1;
-        end
-
-
-    // use axi_wready as a stall signal
-    always @(posedge clk)
-        if      (state[CONFIG]) deser_valid <= 1'b0;
-        else if (axi_wready)    deser_valid <= buf_pop;
-
-
-    always @(posedge clk)
-        if (state[CONFIG]) deser_last <= 1'b0;
-        else if (axi_wready) begin
-            // trigger on last word in stream or last word in burst
-            deser_last <= buf_pop &
-                ((str_length == str_cnt) | (BURST_LAST == str_cnt[0 +: BURST_WIDTH]));
-        end
-
-
     // half way mark ready flag
     always @(posedge clk)
-        if (state[CONFIG])  ready <= 1'b0;
-        else                ready <= ~|(buf_count[BUF_AWIDTH:BUF_AWIDTH-1]);
+        if (rst)    ready <= 1'b0;
+        else        ready <= ~|(buf_count[BUF_AWIDTH:BUF_AWIDTH-1]);
 
 
     fifo_simple #(
@@ -175,7 +155,28 @@ module axis_write_data
     );
 
 
-    assign buf_pop = ~buf_empty & axi_wready;
+    assign buf_pop = ~deser_en | deser_rdy;
+
+
+    always @(posedge clk)
+        if      (rst)       deser_en <= 1'b0;
+        else if (buf_pop)   deser_en <= ~buf_empty;
+
+
+    always @(posedge clk)
+        if (rst) deser_last <= 1'b0;
+        else if (buf_pop) begin
+            // trigger on last word in stream or last word in burst
+            deser_last <= ~buf_empty &
+                ((str_length == str_cnt) | (BURST_LAST == str_cnt[0 +: BURST_WIDTH]));
+        end
+
+
+    always @(posedge clk)
+        if (state[SET]) str_cnt <= 'b0;
+        else if (buf_pop) begin
+            str_cnt <= str_cnt + {{CFG_DWIDTH-1{1'b0}}, ~buf_empty};
+        end
 
 
     axis_deserializer #(
@@ -183,11 +184,11 @@ module axis_write_data
         .DATA_WIDTH (DATA_WIDTH))
     deser_ (
         .clk        (clk),
-        .rst        (state[CONFIG]),
+        .rst        (rst),
 
         .up_data    (deser_data),
-        .up_valid   (deser_valid),
-        .up_ready   (),
+        .up_valid   (deser_en),
+        .up_ready   (deser_rdy),
         .up_last    (deser_last),
 
         .down_data  (axi_wdata),
@@ -219,7 +220,7 @@ module axis_write_data
                 state_nx[ACTIVE] = 1'b1;
             end
             state[ACTIVE] : begin
-                if (axi_wready & buf_pop & (str_length == str_cnt)) begin
+                if (buf_pop & ~buf_empty & (str_length == str_cnt)) begin
                     state_nx[WAIT] = 1'b1;
                 end
                 else state_nx[ACTIVE] = 1'b1;
