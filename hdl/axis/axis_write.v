@@ -89,9 +89,6 @@ module axis_write
     wire                                cfg_addr_ready;
     wire                                cfg_data_ready;
 
-    reg  [CFG_AWIDTH-1:0]               cfg_addr_r;
-    reg  [CFG_DWIDTH-1:0]               cfg_data_r;
-    reg                                 cfg_valid_r;
     wire [STORE_WIDTH+CFG_DWIDTH-1:0]   cfg_store_i;
     reg  [STORE_WIDTH-1:0]              cfg_store;
     reg  [7:0]                          cfg_cnt;
@@ -110,30 +107,17 @@ module axis_write
      * Implementation
      */
 
-    assign cfg_store_i  = {cfg_store, cfg_data_r};
+    assign cfg_store_i  = {cfg_store, cfg_data};
 
     assign start_addr   = cfg_store[CFG_DWIDTH +: CFG_DWIDTH];
 
     assign str_length   = cfg_store[0 +: CFG_DWIDTH];
 
-    assign id_valid     = (CFG_ID == cfg_data_r);
+    assign id_valid     = (CFG_ID == cfg_data);
 
-    assign addressed    = (CFG_ADDR == cfg_addr_r) & cfg_valid_r;
+    assign addressed    = (CFG_ADDR == cfg_addr) & cfg_valid;
 
-    assign axis_data    = (CFG_DATA == cfg_addr_r) & cfg_valid_r;
-
-
-    // register for improved timing
-    always @(posedge clk)
-        if (rst)    cfg_valid_r <= 1'b0;
-        else        cfg_valid_r <= cfg_valid;
-
-
-    // register for improved timing
-    always @(posedge clk) begin
-        cfg_addr_r <= cfg_addr;
-        cfg_data_r <= cfg_data;
-    end
+    assign axis_data    = (CFG_DATA == cfg_addr) & cfg_valid;
 
 
     always @(posedge clk)
@@ -209,6 +193,7 @@ module axis_write
         .CFG_DWIDTH     (CFG_DWIDTH),
         .WIDTH_RATIO    (WIDTH_RATIO),
         .CONVERT_SHIFT  ($clog2(WIDTH_RATIO)),
+
         .AXI_LEN_WIDTH  (AXI_LEN_WIDTH),
         .AXI_ADDR_WIDTH (AXI_ADDR_WIDTH),
         .AXI_DATA_WIDTH (AXI_DATA_WIDTH))
@@ -233,6 +218,7 @@ module axis_write
         .BUF_AWIDTH     (BUF_AWIDTH),
         .CFG_DWIDTH     (CFG_DWIDTH),
         .CONVERT_SHIFT  ($clog2(WIDTH_RATIO)),
+
         .AXI_LEN_WIDTH  (AXI_LEN_WIDTH),
         .AXI_DATA_WIDTH (AXI_DATA_WIDTH),
         .DATA_WIDTH     (DATA_WIDTH))

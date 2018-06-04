@@ -120,6 +120,24 @@ module axis #(
      * Implementation
      */
 
+    reg  [CFG_AWIDTH-1:0]   cfg_addr_r;
+    reg  [CFG_DWIDTH-1:0]   cfg_data_r;
+    reg                     cfg_valid_r;
+
+
+    // register for improved timing
+    always @(posedge clk)
+        if (rst)    cfg_valid_r <= 1'b0;
+        else        cfg_valid_r <= cfg_valid;
+
+
+    // register for improved timing
+    always @(posedge clk) begin
+        cfg_addr_r <= cfg_addr;
+        cfg_data_r <= cfg_data;
+    end
+
+
     // write path static values
     assign axi_awlock   = 1'h0; // NORMAL_ACCESS
     assign axi_awcache  = 4'h0; // NON_CACHE_NON_BUFFER
@@ -164,9 +182,9 @@ module axis #(
         .clk            (clk),
         .rst            (rst),
 
-        .cfg_addr       (cfg_addr),
-        .cfg_data       (cfg_data),
-        .cfg_valid      (cfg_valid),
+        .cfg_addr       (cfg_addr_r),
+        .cfg_data       (cfg_data_r),
+        .cfg_valid      (cfg_valid_r),
 
         .axi_awready    (axi_awready),
         .axi_awaddr     (axi_awaddr),
@@ -202,9 +220,9 @@ module axis #(
         .clk            (clk),
         .rst            (rst),
 
-        .cfg_addr       (cfg_addr),
-        .cfg_data       (cfg_data),
-        .cfg_valid      (cfg_valid),
+        .cfg_addr       (cfg_addr_r),
+        .cfg_data       (cfg_data_r),
+        .cfg_valid      (cfg_valid_r),
 
         .axi_arready    (axi_arready),
         .axi_araddr     (axi_araddr),
