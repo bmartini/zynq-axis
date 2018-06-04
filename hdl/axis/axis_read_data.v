@@ -18,14 +18,13 @@
 
 
 `include "fifo_simple.v"
-`include "axis_serializer.v"
+`include "axis_gbox.v"
 
 module axis_read_data
   #(parameter
     BUF_CFG_AWIDTH  = 5,
     BUF_AWIDTH      = 9,
     CFG_DWIDTH      = 32,
-    WIDTH_RATIO     = 2,
 
     AXI_DATA_WIDTH  = 64,
     DATA_WIDTH      = 32)
@@ -162,24 +161,23 @@ module axis_read_data
         else if (buf_pop)   buf_en <= ~buf_empty;
 
 
-    axis_serializer #(
-        .DATA_NB    (WIDTH_RATIO),
-        .DATA_WIDTH (DATA_WIDTH))
+    axis_gbox #(
+        .DATA_UP_WIDTH  (AXI_DATA_WIDTH),
+        .DATA_DN_WIDTH  (DATA_WIDTH))
     serializer_ (
         .clk        (clk),
         .rst        (state[RESET]),
 
         .up_data    (buf_data),
-        .up_valid   (buf_en),
-        .up_ready   (buf_rdy),
+        .up_last    (buf_last),
+        .up_val     (buf_en),
+        .up_rdy     (buf_rdy),
 
-        .down_data  (data),
-        .down_valid (valid_i),
-        .down_ready (ready)
+        .dn_data    (data),
+        .dn_last    (),
+        .dn_val     (valid),
+        .dn_rdy     (ready & state[ACTIVE])
     );
-
-
-    assign valid = valid_i & state[ACTIVE];
 
 
     always @(posedge clk)

@@ -229,7 +229,6 @@ module axis_read
     axis_read_data #(
         .BUF_AWIDTH     (BUF_AWIDTH),
         .CFG_DWIDTH     (CFG_DWIDTH),
-        .WIDTH_RATIO    (WIDTH_RATIO),
         .AXI_DATA_WIDTH (AXI_DATA_WIDTH),
         .DATA_WIDTH     (DATA_WIDTH))
     axis_read_data_ (
