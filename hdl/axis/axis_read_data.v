@@ -37,6 +37,7 @@ module axis_read_data
     output                              cfg_rdy,
 
     input       [AXI_DATA_WIDTH-1:0]    axi_rdata,
+    input                               axi_rlast,
     input                               axi_rvalid,
     output                              axi_rready,
 
@@ -78,6 +79,7 @@ module axis_read_data
     wire                        buf_afull;
     wire                        buf_empty;
     wire [AXI_DATA_WIDTH-1:0]   buf_data;
+    wire                        buf_last;
     reg                         buf_en;
     wire                        buf_pop;
     wire                        buf_rdy;
@@ -131,7 +133,7 @@ module axis_read_data
 
 
     fifo_simple #(
-        .DATA_WIDTH (AXI_DATA_WIDTH),
+        .DATA_WIDTH (1+AXI_DATA_WIDTH),
         .ADDR_WIDTH (BUF_AWIDTH))
     buffer_ (
         .clk        (clk),
@@ -143,10 +145,10 @@ module axis_read_data
         .full       (),
         .full_a     (buf_afull),
 
-        .push_data  (axi_rdata),
+        .push_data  ({axi_rlast,    axi_rdata}),
         .push       (axi_rvalid & axi_rready),
 
-        .pop_data   (buf_data),
+        .pop_data   ({buf_last,     buf_data}),
         .pop        (buf_pop)
     );
 

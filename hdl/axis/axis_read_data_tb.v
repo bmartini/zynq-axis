@@ -75,6 +75,7 @@ module axis_read_data_tb;
     wire                            cfg_rdy;
 
     reg     [AXI_DATA_WIDTH-1:0]    axi_rdata;
+    reg                             axi_rlast;
     reg                             axi_rvalid;
     wire                            axi_rready;
 
@@ -103,6 +104,7 @@ module axis_read_data_tb;
         .cfg_rdy        (cfg_rdy),
 
         .axi_rdata      (axi_rdata),
+        .axi_rlast      (axi_rlast),
         .axi_rvalid     (axi_rvalid),
         .axi_rready     (axi_rready),
 
@@ -121,13 +123,14 @@ module axis_read_data_tb;
             "%d\t%d",
             $time, rst,
 
-            "\t%d\t%b",
+            "\t%d\t%b\t%b",
             cfg_length,
             cfg_val,
             cfg_rdy,
 
-            "\t%x\t%b\t%b",
+            "\t%x\t%b\t%b\t%b",
             axi_rdata,
+            axi_rlast,
             axi_rvalid,
             axi_rready,
 
@@ -152,7 +155,8 @@ module axis_read_data_tb;
             "\tc_r",
 
             "\t\t\t\t\t\tr_d",
-            "\t\t\tr_v",
+            "\t\t\t\tr_l",
+            "\tr_v",
             "\tr_r",
 
             "\t\ts_d",
@@ -176,6 +180,7 @@ module axis_read_data_tb;
         cfg_val     = 'b0;
 
         axi_rdata   = 'b0;
+        axi_rlast   = 'b0;
         axi_rvalid  = 'b0;
 
         ready       = 'b0;
@@ -217,10 +222,12 @@ module axis_read_data_tb;
         axi_rvalid  <= 1'b1;
         @(negedge clk);
         axi_rdata   <= {32'd9, 32'd8, 32'd7, 32'd6, 32'd5, 32'd4, 32'd3, 32'd2};
+        axi_rlast   <= 1'b1;
         while ( ~axi_rready) @(negedge clk);
         axi_rvalid  <= 1'b1;
         @(negedge clk);
         axi_rdata   <= 'b0;
+        axi_rlast   <= 1'b0;
         axi_rvalid  <= 1'b0;
 
         repeat(15) @(negedge clk);

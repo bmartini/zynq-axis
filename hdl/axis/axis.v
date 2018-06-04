@@ -209,6 +209,7 @@ module axis #(
         .axi_arvalid    (axi_arvalid),
 
         .axi_rdata      (axi_rdata),
+        .axi_rlast      (axi_rlast),
         .axi_rvalid     (axi_rvalid),
         .axi_rready     (axi_rready),
 

@@ -48,6 +48,7 @@ module axis_read
     output                              axi_arvalid,
 
     input       [AXI_DATA_WIDTH-1:0]    axi_rdata,
+    input                               axi_rlast,
     input                               axi_rvalid,
     output                              axi_rready,
 
@@ -240,6 +241,7 @@ module axis_read
         .cfg_rdy        (cfg_data_ready),
 
         .axi_rdata      (axi_rdata),
+        .axi_rlast      (axi_rlast),
         .axi_rvalid     (axi_rvalid),
         .axi_rready     (axi_rready),
 
