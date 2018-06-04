@@ -185,6 +185,7 @@ module axis #(
         .cfg_addr       (cfg_addr_r),
         .cfg_data       (cfg_data_r),
         .cfg_valid      (cfg_valid_r),
+        .cfg_ready      (),
 
         .axi_awready    (axi_awready),
         .axi_awaddr     (axi_awaddr),
@@ -223,6 +224,7 @@ module axis #(
         .cfg_addr       (cfg_addr_r),
         .cfg_data       (cfg_data_r),
         .cfg_valid      (cfg_valid_r),
+        .cfg_ready      (),
 
         .axi_arready    (axi_arready),
         .axi_araddr     (axi_araddr),
