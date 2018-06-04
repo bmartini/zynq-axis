@@ -51,9 +51,10 @@ module axis_read_data
      */
 
     localparam
-        CONFIG  =  0,
-        SET     =  1,
-        ACTIVE  =  2;
+        RESET   =  0,
+        CONFIG  =  1,
+        SET     =  2,
+        ACTIVE  =  3;
 
 
 `ifdef VERBOSE
@@ -65,8 +66,8 @@ module axis_read_data
      * Internal signals
      */
 
-    reg  [2:0]                  state;
-    reg  [2:0]                  state_nx;
+    reg  [3:0]                  state;
+    reg  [3:0]                  state_nx;
 
     wire                        cfg_buf_pop;
     wire                        cfg_buf_full;
@@ -166,7 +167,7 @@ module axis_read_data
         .DATA_WIDTH (DATA_WIDTH))
     serializer_ (
         .clk        (clk),
-        .rst        (state[CONFIG]),
+        .rst        (state[RESET]),
 
         .up_data    (buf_data),
         .up_valid   (buf_en),
@@ -184,7 +185,7 @@ module axis_read_data
     always @(posedge clk)
         if (rst) begin
             state           <= 'b0;
-            state[CONFIG]   <= 1'b1;
+            state[RESET]    <= 1'b1;
         end
         else state <= state_nx;
 
@@ -193,6 +194,9 @@ module axis_read_data
         state_nx = 'b0;
 
         case (1'b1)
+            state[RESET] : begin
+                state_nx[CONFIG] = 1'b1;
+            end
             state[CONFIG] : begin
                 if ( ~cfg_buf_empty) begin
                     state_nx[SET] = 1'b1;
@@ -203,13 +207,18 @@ module axis_read_data
                 state_nx[ACTIVE] = 1'b1;
             end
             state[ACTIVE] : begin
-                if (valid & (str_length == str_cnt)) begin
+                if      (valid & (str_length == str_cnt) & ~(buf_en & buf_rdy)) begin
+                    // serializer may contain leftover data
+                    state_nx[RESET] = 1'b1;
+                end
+                else if (valid & (str_length == str_cnt) &  (buf_en & buf_rdy)) begin
+                    // serializer contains valid data
                     state_nx[CONFIG] = 1'b1;
                 end
                 else state_nx[ACTIVE] = 1'b1;
             end
             default : begin
-                state_nx[CONFIG] = 1'b1;
+                state_nx[RESET] = 1'b1;
             end
         endcase
     end
