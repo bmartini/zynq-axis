@@ -65,7 +65,6 @@ module axis_gbox
      * Internal signals
      */
 
-    genvar ii;
 
     /**
      * Implementation
@@ -176,6 +175,7 @@ module axis_gbox
 
             localparam DATA_NB = DATA_DN_WIDTH/DATA_UP_WIDTH;
 
+            integer                     ii;
             wire [2*DATA_NB-1:0]        token_nx;
             reg  [DATA_NB-1:0]          token;
             reg  [DATA_DN_WIDTH-1:0]    dn_data_i;
@@ -215,14 +215,13 @@ module axis_gbox
                 end
 
 
-            for (ii=0; ii<DATA_NB; ii=ii+1) begin : CONCAT_
-
-                always @(posedge clk)
+            always @(posedge clk)
+                for (ii=0; ii<DATA_NB; ii=ii+1) begin
                     if (dn_rdy & token[ii]) begin
                         dn_data_i[ii*DATA_UP_WIDTH +: DATA_UP_WIDTH] <= up_data;
                     end
+                end
 
-            end
         end
     endgenerate
 
