@@ -59,8 +59,7 @@ module axis_write_data
         CONFIG  =  0,
         SET     =  1,
         ACTIVE  =  2,
-        WAIT    =  3,
-        DONE    =  4;
+        WAIT    =  3;
 
 
 `ifdef VERBOSE
@@ -72,8 +71,8 @@ module axis_write_data
      * Internal signals
      */
 
-    reg  [4:0]                  state;
-    reg  [4:0]                  state_nx;
+    reg  [3:0]                  state;
+    reg  [3:0]                  state_nx;
 
     wire                        cfg_buf_pop;
     wire                        cfg_buf_full;
@@ -227,12 +226,9 @@ module axis_write_data
             end
             state[WAIT] : begin
                 if (axi_wready & axi_wlast) begin
-                    state_nx[DONE] = 1'b1;
+                    state_nx[CONFIG] = 1'b1;
                 end
                 else state_nx[WAIT] = 1'b1;
-            end
-            state[DONE] : begin
-                state_nx[CONFIG] = 1'b1;
             end
             default : begin
                 state_nx[CONFIG] = 1'b1;
