@@ -42,6 +42,7 @@ module axis_write
     input       [CFG_AWIDTH-1:0]        cfg_addr,
     input       [CFG_DWIDTH-1:0]        cfg_data,
     input                               cfg_valid,
+    output                              cfg_ready,
 
     input                               axi_awready,
     output      [AXI_ADDR_WIDTH-1:0]    axi_awaddr,
@@ -69,8 +70,7 @@ module axis_write
     localparam
         C_IDLE      = 0,
         C_CONFIG    = 1,
-        C_WAIT      = 2,
-        C_ENABLE    = 3;
+        C_STALL     = 2;
 
 
 `ifdef VERBOSE
@@ -83,8 +83,8 @@ module axis_write
      */
 
 
-    reg  [3:0]                          c_state;
-    reg  [3:0]                          c_state_nx;
+    reg  [2:0]                          c_state;
+    reg  [2:0]                          c_state_nx;
 
     wire                                cfg_addr_ready;
     wire                                cfg_data_ready;
@@ -92,11 +92,10 @@ module axis_write
     wire [STORE_WIDTH+CFG_DWIDTH-1:0]   cfg_store_i;
     reg  [STORE_WIDTH-1:0]              cfg_store;
     reg  [7:0]                          cfg_cnt;
+    wire                                cfg_done;
 
-    wire [CFG_DWIDTH-1:0]               start_addr;
-    reg  [CFG_DWIDTH-1:0]               cfg_address;
-    wire [CFG_DWIDTH-1:0]               str_length;
-    reg  [CFG_DWIDTH-1:0]               cfg_length;
+    wire [CFG_DWIDTH-1:0]               cfg_address;
+    wire [CFG_DWIDTH-1:0]               cfg_length;
     reg                                 cfg_enable;
     wire                                id_valid;
     wire                                addressed;
@@ -109,15 +108,19 @@ module axis_write
 
     assign cfg_store_i  = {cfg_store, cfg_data};
 
-    assign start_addr   = cfg_store[CFG_DWIDTH +: CFG_DWIDTH];
+    assign cfg_address  = cfg_store[CFG_DWIDTH +: CFG_DWIDTH];
 
-    assign str_length   = cfg_store[0 +: CFG_DWIDTH];
+    assign cfg_length   = cfg_store[0 +: CFG_DWIDTH];
 
     assign id_valid     = (CFG_ID == cfg_data);
 
     assign addressed    = (CFG_ADDR == cfg_addr) & cfg_valid;
 
     assign axis_data    = (CFG_DATA == cfg_addr) & cfg_valid;
+
+    assign cfg_ready    = ~c_state[C_STALL];
+
+    assign cfg_done     = ((CFG_NB-1) == cfg_cnt);
 
 
     always @(posedge clk)
@@ -136,16 +139,10 @@ module axis_write
 
 
     always @(posedge clk)
-        if (rst)    cfg_enable <= 1'b0;
-        else        cfg_enable <= c_state[C_ENABLE];
-
-
-    always @(posedge clk) begin
-        if (c_state[C_ENABLE]) begin
-            cfg_address <= start_addr;
-            cfg_length  <= str_length;
+        if (rst) cfg_enable <= 1'b0;
+        else if ( ~c_state[C_STALL]) begin
+            cfg_enable <= c_state[C_CONFIG] & axis_data & cfg_done;
         end
-    end
 
 
     always @(posedge clk)
@@ -167,19 +164,19 @@ module axis_write
                 else c_state_nx[C_IDLE] = 1'b1;
             end
             c_state[C_CONFIG] : begin
-                if (axis_data & ((CFG_NB-1) <= cfg_cnt)) begin
-                    c_state_nx[C_WAIT] = 1'b1;
+                if  (axis_data & cfg_done & cfg_addr_ready & cfg_data_ready) begin
+                    c_state_nx[C_IDLE] = 1'b1;
+                end
+                else if (axis_data & cfg_done) begin
+                    c_state_nx[C_STALL] = 1'b1;
                 end
                 else c_state_nx[C_CONFIG] = 1'b1;
             end
-            c_state[C_WAIT] : begin
+            c_state[C_STALL] : begin
                 if (cfg_addr_ready & cfg_data_ready) begin
-                    c_state_nx[C_ENABLE] = 1'b1;
+                    c_state_nx[C_IDLE] = 1'b1;
                 end
-                else c_state_nx[C_WAIT] = 1'b1;
-            end
-            c_state[C_ENABLE] : begin
-                c_state_nx[C_IDLE] = 1'b1;
+                else c_state_nx[C_STALL] = 1'b1;
             end
             default : begin
                 c_state_nx[C_IDLE] = 1'b1;
@@ -203,7 +200,7 @@ module axis_write
 
         .cfg_address    (cfg_address),
         .cfg_length     (cfg_length),
-        .cfg_val        (cfg_enable),
+        .cfg_val        (cfg_enable & ~c_state[C_STALL]),
         .cfg_rdy        (cfg_addr_ready),
 
         .axi_aready     (axi_awready),
@@ -227,7 +224,7 @@ module axis_write
         .rst            (rst),
 
         .cfg_length     (cfg_length),
-        .cfg_val        (cfg_enable),
+        .cfg_val        (cfg_enable & ~c_state[C_STALL]),
         .cfg_rdy        (cfg_data_ready),
 
         .axi_wlast      (axi_wlast),
