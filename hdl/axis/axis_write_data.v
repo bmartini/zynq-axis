@@ -57,8 +57,8 @@ module axis_write_data
     localparam
         CONFIG  =  0,
         SET     =  1,
-        ACTIVE  =  2,
-        WAIT    =  3;
+        LOAD    =  2,
+        ACTIVE  =  3;
 
 
 `ifdef VERBOSE
@@ -79,12 +79,14 @@ module axis_write_data
     wire [CFG_DWIDTH-1:0]       cfg_buf_length;
 
     reg  [CFG_DWIDTH-1:0]       str_cnt;
+    reg  [CFG_DWIDTH-1:0]       str_next;
     reg  [CFG_DWIDTH-1:0]       str_length;
 
     wire [BUF_AWIDTH:0]         buf_count;
     wire                        buf_pop;
     wire                        buf_empty;
 
+    reg                         deser_done;
     reg                         deser_last;
     wire [DATA_WIDTH-1:0]       deser_data;
     reg                         deser_en;
@@ -154,7 +156,7 @@ module axis_write_data
     );
 
 
-    assign buf_pop = ~deser_en | deser_rdy;
+    assign buf_pop = ~deser_en | (deser_rdy & state[ACTIVE]);
 
 
     always @(posedge clk)
@@ -163,7 +165,20 @@ module axis_write_data
 
 
     always @(posedge clk)
-        if (rst) deser_last <= 1'b0;
+        if (state[LOAD]) begin
+            deser_done <= str_next[0] & (str_length == {CFG_DWIDTH{1'b0}});
+        end
+        else if (buf_pop) begin
+            // trigger on last word in stream
+            deser_done <= ~buf_empty & (str_length == str_cnt);
+        end
+
+
+    always @(posedge clk)
+        if (state[LOAD]) begin
+            deser_last <= str_next[0] &
+                ((str_length == {CFG_DWIDTH{1'b0}}) | (BURST_LAST == {BURST_WIDTH{1'b0}}));
+        end
         else if (buf_pop) begin
             // trigger on last word in stream or last word in burst
             deser_last <= ~buf_empty &
@@ -172,9 +187,21 @@ module axis_write_data
 
 
     always @(posedge clk)
-        if (state[SET]) str_cnt <= 'b0;
+        if (state[LOAD]) begin
+            str_cnt <= str_next;
+        end
         else if (buf_pop) begin
             str_cnt <= str_cnt + {{CFG_DWIDTH-1{1'b0}}, ~buf_empty};
+        end
+
+
+    always @(posedge clk)
+        if (rst) str_next <= 'b0;
+        else if (deser_en & deser_rdy & deser_done & state[ACTIVE]) begin
+            // if buffer is not empty when one stream is done it means the 1st
+            // word of the next stream is already in the pipeline
+
+            str_next <= {{CFG_DWIDTH-1{1'b0}}, ~buf_empty};
         end
 
 
@@ -187,7 +214,7 @@ module axis_write_data
 
         .up_data    (deser_data),
         .up_last    (deser_last),
-        .up_val     (deser_en),
+        .up_val     (deser_en & state[ACTIVE]),
         .up_rdy     (deser_rdy),
 
         .dn_data    (axi_wdata),
@@ -216,25 +243,23 @@ module axis_write_data
                 else state_nx[CONFIG] = 1'b1;
             end
             state[SET] : begin
+                state_nx[LOAD] = 1'b1;
+            end
+            state[LOAD] : begin
                 state_nx[ACTIVE] = 1'b1;
             end
             state[ACTIVE] : begin
-                if (buf_pop & ~buf_empty & (str_length == str_cnt)) begin
-                    state_nx[WAIT] = 1'b1;
-                end
-                else state_nx[ACTIVE] = 1'b1;
-            end
-            state[WAIT] : begin
-                if (axi_wready & axi_wlast) begin
+                if (deser_en & deser_rdy & deser_done) begin
                     state_nx[CONFIG] = 1'b1;
                 end
-                else state_nx[WAIT] = 1'b1;
+                else state_nx[ACTIVE] = 1'b1;
             end
             default : begin
                 state_nx[CONFIG] = 1'b1;
             end
         endcase
     end
+
 
 
 endmodule

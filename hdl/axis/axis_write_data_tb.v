@@ -146,6 +146,9 @@ module axis_write_data_tb;
             "\t%b",
             uut.state,
 
+            "\t%d",
+            uut.str_cnt,
+
         );
 
     endtask // display_signals
@@ -337,6 +340,14 @@ module axis_write_data_tb;
         cfg_val     <= 1'b1;
         @(negedge clk)
 
+        cfg_length  <= 1;
+        cfg_val     <= 1'b1;
+        @(negedge clk)
+
+        cfg_length  <= 1;
+        cfg_val     <= 1'b1;
+        @(negedge clk)
+
         cfg_length  <= 'b0;
         cfg_val     <= 1'b0;
         repeat(5) @(negedge clk);
@@ -352,7 +363,7 @@ module axis_write_data_tb;
         axi_wready  <= 1'b1;
         repeat(15) @(negedge clk);
 
-        repeat (STREAM_LENGTH) begin
+        repeat (STREAM_LENGTH+1) begin
             data    <= data + 1;
             valid   <= 1'b1;
             @(negedge clk);
@@ -360,6 +371,11 @@ module axis_write_data_tb;
         valid       <= 1'b0;
 
 
+        repeat(15) @(negedge clk);
+        data    <= data + 1;
+        valid   <= 1'b1;
+        @(negedge clk);
+        valid       <= 1'b0;
         repeat(15) @(negedge clk);
         axi_wready  <= 1'b0;
 
