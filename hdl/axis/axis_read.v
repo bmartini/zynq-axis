@@ -32,6 +32,7 @@ module axis_read
     CFG_AWIDTH      = 5,
     CFG_DWIDTH      = 32,
 
+    AXI_ID_WIDTH    = 8,
     AXI_LEN_WIDTH   = 8,
     AXI_ADDR_WIDTH  = 32,
     AXI_DATA_WIDTH  = 32,
@@ -44,10 +45,11 @@ module axis_read
     input                               cfg_valid,
     output                              cfg_ready,
 
-    input                               axi_arready,
+    output reg  [AXI_ID_WIDTH-1:0]      axi_arid,
     output      [AXI_ADDR_WIDTH-1:0]    axi_araddr,
     output      [AXI_LEN_WIDTH-1:0]     axi_arlen,
     output                              axi_arvalid,
+    input                               axi_arready,
 
     input       [AXI_DATA_WIDTH-1:0]    axi_rdata,
     input                               axi_rlast,
@@ -142,6 +144,15 @@ module axis_read
         if (rst) cfg_enable <= 1'b0;
         else if ( ~c_state[C_STALL]) begin
             cfg_enable <= c_state[C_CONFIG] & axis_data & cfg_done;
+        end
+
+
+    always @(posedge clk)
+        if (rst) begin
+            axi_arid <= {AXI_ID_WIDTH{1'b0}};
+        end
+        else if (axi_arvalid && axi_arready) begin
+            axi_arid <= axi_arid + {{(AXI_ID_WIDTH-1){1'b0}}, 1'b1};
         end
 
 

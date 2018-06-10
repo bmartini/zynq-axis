@@ -32,6 +32,7 @@ module axis_write
     CFG_AWIDTH      = 5,
     CFG_DWIDTH      = 32,
 
+    AXI_ID_WIDTH    = 8,
     AXI_LEN_WIDTH   = 8,
     AXI_ADDR_WIDTH  = 32,
     AXI_DATA_WIDTH  = 32,
@@ -44,13 +45,15 @@ module axis_write
     input                               cfg_valid,
     output                              cfg_ready,
 
-    input                               axi_awready,
+    output reg  [AXI_ID_WIDTH-1:0]      axi_awid,
     output      [AXI_ADDR_WIDTH-1:0]    axi_awaddr,
     output      [AXI_LEN_WIDTH-1:0]     axi_awlen,
     output                              axi_awvalid,
+    input                               axi_awready,
 
-    output                              axi_wlast,
+    output reg  [AXI_ID_WIDTH-1:0]      axi_wid,
     output      [AXI_DATA_WIDTH-1:0]    axi_wdata,
+    output                              axi_wlast,
     output                              axi_wvalid,
     input                               axi_wready,
 
@@ -142,6 +145,24 @@ module axis_write
         if (rst) cfg_enable <= 1'b0;
         else if ( ~c_state[C_STALL]) begin
             cfg_enable <= c_state[C_CONFIG] & axis_data & cfg_done;
+        end
+
+
+    always @(posedge clk)
+        if (rst) begin
+            axi_awid <= {AXI_ID_WIDTH{1'b0}};
+        end
+        else if (axi_awvalid && axi_awready) begin
+            axi_awid <= axi_awid + {{(AXI_ID_WIDTH-1){1'b0}}, 1'b1};
+        end
+
+
+    always @(posedge clk)
+        if (rst) begin
+            axi_wid <= {AXI_ID_WIDTH{1'b0}};
+        end
+        else if (axi_wvalid & axi_wready & axi_wlast) begin
+            axi_wid <= axi_wid + {{(AXI_ID_WIDTH-1){1'b0}}, 1'b1};
         end
 
 
