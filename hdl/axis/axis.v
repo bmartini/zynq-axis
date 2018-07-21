@@ -11,7 +11,8 @@
  * Author:
  *  Berin Martini (berin.martini@gmail.com)
  */
-`ifndef _axis_ `define _axis_
+`ifndef _axis_
+`define _axis_
 
 
 `include "axis_write.v"

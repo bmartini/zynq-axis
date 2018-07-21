@@ -14,7 +14,8 @@
  * Author:
  *  Berin Martini (berin.martini@gmail.com)
  */
-`ifndef _fifo_simple_ `define _fifo_simple_
+`ifndef _fifo_simple_
+`define _fifo_simple_
 
 
 module fifo_simple

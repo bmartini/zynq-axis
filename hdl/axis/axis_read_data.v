@@ -14,7 +14,8 @@
  * Author:
  *  Berin Martini (berin.martini@gmail.com)
  */
-`ifndef _axis_read_data_ `define _axis_read_data_
+`ifndef _axis_read_data_
+`define _axis_read_data_
 
 
 `include "fifo_simple.v"

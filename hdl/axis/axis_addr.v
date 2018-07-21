@@ -14,7 +14,8 @@
  * Author:
  *  Berin Martini (berin.martini@gmail.com)
  */
-`ifndef _axis_addr_ `define _axis_addr_
+`ifndef _axis_addr_
+`define _axis_addr_
 
 `include "fifo_simple.v"
 

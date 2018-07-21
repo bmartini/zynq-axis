@@ -15,7 +15,8 @@
  * Author:
  *  Berin Martini (berin.martini@gmail.com)
  */
-`ifndef _axis_write_ `define _axis_write_
+`ifndef _axis_write_
+`define _axis_write_
 
 
 `include "axis_addr.v"

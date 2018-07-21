@@ -1,4 +1,5 @@
-`ifndef _axi4lite_cfg_ `define _axi4lite_cfg_
+`ifndef _axi4lite_cfg_
+`define _axi4lite_cfg_
 
 `timescale 1 ns / 1 ps
 
