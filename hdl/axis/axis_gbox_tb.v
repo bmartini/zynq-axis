@@ -1,9 +1,9 @@
 /**
  * Testbench for:
- *  axis_serializer
+ *  axis_gbox
  *
  * Created:
- *  Fri Nov  7 11:49:55 EST 2014
+ *  Sun Jun  3 17:57:21 PDT 2018
  *
  * Author:
  *  Berin Martini (berin.martini@gmail.com)
@@ -15,9 +15,9 @@
 //`define VERBOSE
 
 
-`include "axis_serializer.v"
+`include "axis_gbox.v"
 
-module axis_serializer_tb;
+module axis_gbox_tb;
 
     /**
      * Clock and control functions
@@ -50,15 +50,22 @@ module axis_serializer_tb;
      * Local parameters
      */
 
-    localparam DATA_NB          = 3;
-    localparam DATA_WIDTH       = 8;
+    localparam DATA_UP_WIDTH    = 24;
+    localparam DATA_DN_WIDTH    = 8;
+    localparam DATA_NB          = DATA_UP_WIDTH/DATA_DN_WIDTH;
+
+    //localparam DATA_UP_WIDTH    = 8;
+    //localparam DATA_DN_WIDTH    = 24;
+    //localparam DATA_NB          = DATA_DN_WIDTH/DATA_UP_WIDTH;
 
     localparam STREAM_LENGTH    = 256;
+    localparam STREAM_WIDTH     = (DATA_DN_WIDTH < DATA_UP_WIDTH) ?
+                                   DATA_DN_WIDTH : DATA_UP_WIDTH ;
 
 `ifdef TB_VERBOSE
     initial begin
-        $display("Testbench for unit 'axis_serializer' data width: %d, nb: %d",
-            DATA_WIDTH, DATA_NB);
+        $display("Testbench for unit 'axis_gbox' data up width: %d, down: %d",
+            DATA_UP_WIDTH, DATA_DN_WIDTH);
     end
 `endif
 
@@ -67,37 +74,41 @@ module axis_serializer_tb;
      *  signals, registers and wires
      */
 
-    reg                                 rst;
+    reg                         rst;
 
-    reg     [DATA_NB*DATA_WIDTH-1:0]    up_data;
-    wire                                up_valid;
-    wire                                up_ready;
+    wire    [DATA_UP_WIDTH-1:0] up_data;
+    reg                         up_last;
+    wire                        up_val;
+    wire                        up_rdy;
 
-    wire    [DATA_WIDTH-1:0]            down_data;
-    wire                                down_valid;
-    reg                                 down_ready;
+    wire    [DATA_DN_WIDTH-1:0] dn_data;
+    wire                        dn_last;
+    wire                        dn_val;
+    reg                         dn_rdy;
 
-    reg     [DATA_WIDTH-1:0]            stream  [0:STREAM_LENGTH-1];
-    integer                             cnt;
+    reg     [STREAM_WIDTH-1:0]  stream  [0:STREAM_LENGTH-1];
+    integer                     cnt;
 
     /**
      * Unit under test
      */
 
-    axis_serializer #(
-        .DATA_NB    (DATA_NB),
-        .DATA_WIDTH (DATA_WIDTH))
+    axis_gbox #(
+        .DATA_UP_WIDTH  (DATA_UP_WIDTH),
+        .DATA_DN_WIDTH  (DATA_DN_WIDTH))
     uut (
         .clk        (clk),
         .rst        (rst),
 
         .up_data    (up_data),
-        .up_valid   (up_valid),
-        .up_ready   (up_ready),
+        .up_last    (up_last),
+        .up_val     (up_val),
+        .up_rdy     (up_rdy),
 
-        .down_data  (down_data),
-        .down_valid (down_valid),
-        .down_ready (down_ready)
+        .dn_data    (dn_data),
+        .dn_last    (dn_last),
+        .dn_val     (dn_val),
+        .dn_rdy     (dn_rdy)
     );
 
 
@@ -110,44 +121,36 @@ module axis_serializer_tb;
             "%d\t%d",
             $time, rst,
 
-            "\tu2: %d\tu1: %d\tu0: %d",
-            up_data[2*DATA_WIDTH+:DATA_WIDTH],
-            up_data[1*DATA_WIDTH+:DATA_WIDTH],
-            up_data[0*DATA_WIDTH+:DATA_WIDTH],
+            "\tu: %x",
+            up_data,
 
-            "\tv %b\tr %b",
-            up_valid,
-            up_ready,
+            "\tv %b\tr %b\tl %b",
+            up_val,
+            up_rdy,
+            up_last,
 
-            "\t%d\t%b\t%b",
-            down_data,
-            down_valid,
-            down_ready,
+            "\t%x\t%b\t%b\t%b",
+            dn_data,
+            dn_val,
+            dn_rdy,
+            dn_last,
 
-            "\t%b",
-            uut.token,
-
-            "\t%x\t%b",
-            uut.serial_data,
-            uut.serial_valid,
         );
-
     endtask // display_signals
 
     task display_header;
         $display(
             "\t\ttime\trst",
 
-            "\tu2_d",
-            "\tu1_d",
-            "\tu0_d",
-
-            "\tu_v",
+            "\tu_d",
+            "\t\tu_v",
             "\tu_r",
+            "\tu_l",
 
             "\td_d",
             "\td_v",
             "\td_r",
+            "\td_l",
 
         );
     endtask
@@ -157,17 +160,15 @@ module axis_serializer_tb;
      * Testbench program
      */
 
-    //assign up_valid = up_ready;
-    assign up_valid = 1'b1;
+    assign up_data = {stream[cnt]+4'd2, stream[cnt]+4'd1, stream[cnt]};
+    //assign up_data  = stream[cnt];
+
+    assign up_val   = 1'b1;
 
     always @(posedge clk)
-        if (up_ready & up_valid) begin
+        if (up_rdy & up_val) begin
             cnt <= cnt + 1;
         end
-
-
-    always @(posedge clk)
-        up_data <= {stream[cnt]+4'd2, stream[cnt]+4'd1, stream[cnt]};
 
 
 
@@ -176,11 +177,13 @@ module axis_serializer_tb;
         clk = 0;
         rst = 0;
 
-        down_ready = 'b0;
+        up_last = 'b0;
+        dn_rdy  = 'b0;
 
         cnt = 0;
         repeat (STREAM_LENGTH) begin
             stream[cnt] = (DATA_NB*cnt)+1;
+            //stream[cnt] = cnt + 1;
             cnt         = cnt + 1;
         end
         cnt = 0;
@@ -201,9 +204,9 @@ module axis_serializer_tb;
 `endif
 
         @(negedge clk);
-        down_ready <= 1'b1;
+        dn_rdy <= 1'b1;
         repeat(20) @(negedge clk);
-        down_ready <= 1'b0;
+        dn_rdy <= 1'b0;
         repeat(10) @(negedge clk);
 
 
@@ -211,25 +214,28 @@ module axis_serializer_tb;
     $display("test non-continuous ready");
 `endif
 
-        down_ready <= 1'b1;
+        dn_rdy <= 1'b1;
         repeat(20) @(negedge clk);
-        down_ready <= 1'b0;
+        dn_rdy  <= 1'b0;
+        up_last <= 1'b1;
         @(negedge clk);
-        down_ready <= 1'b1;
+        dn_rdy  <= 1'b1;
+        repeat (3) @(negedge clk);
+        up_last <= 1'b0;
         repeat(5) @(negedge clk);
-        down_ready <= 1'b0;
+        dn_rdy <= 1'b0;
         repeat(5) @(negedge clk);
-        down_ready <= 1'b1;
+        dn_rdy <= 1'b1;
         repeat(5) @(negedge clk);
-        down_ready <= 1'b0;
+        dn_rdy <= 1'b0;
         repeat(10) @(negedge clk);
-        down_ready <= 1'b1;
+        dn_rdy <= 1'b1;
         @(negedge clk);
-        down_ready <= 1'b0;
+        dn_rdy <= 1'b0;
         @(negedge clk);
-        down_ready <= 1'b1;
+        dn_rdy <= 1'b1;
         @(negedge clk);
-        down_ready <= 1'b0;
+        dn_rdy <= 1'b0;
         repeat(10) @(negedge clk);
 
 

@@ -50,7 +50,7 @@ module axis_addr_tb;
      * Local parameters
      */
 
-    localparam CONFIG_DWIDTH    = 32;
+    localparam CFG_DWIDTH       = 32;
     localparam WIDTH_RATIO      = 16;
     localparam AXI_LEN_WIDTH    = 8;
     localparam AXI_ADDR_WIDTH   = 32;
@@ -67,10 +67,10 @@ module axis_addr_tb;
 
     reg                             rst;
 
-    reg     [CONFIG_DWIDTH-1:0]     cfg_address;
-    reg     [CONFIG_DWIDTH-1:0]     cfg_length;
-    reg                             cfg_valid;
-    wire                            cfg_ready;
+    reg     [CFG_DWIDTH-1:0]        cfg_address;
+    reg     [CFG_DWIDTH-1:0]        cfg_length;
+    reg                             cfg_val;
+    wire                            cfg_rdy;
 
     reg                             axi_aready;
     wire    [AXI_ADDR_WIDTH-1:0]    axi_aaddr;
@@ -83,7 +83,7 @@ module axis_addr_tb;
      */
 
     axis_addr #(
-        .CONFIG_DWIDTH  (CONFIG_DWIDTH),
+        .CFG_DWIDTH     (CFG_DWIDTH),
         .WIDTH_RATIO    (WIDTH_RATIO),
         .CONVERT_SHIFT  ($clog2(WIDTH_RATIO)),
         .AXI_LEN_WIDTH  (AXI_LEN_WIDTH),
@@ -94,8 +94,8 @@ module axis_addr_tb;
 
         .cfg_address    (cfg_address),
         .cfg_length     (cfg_length),
-        .cfg_valid      (cfg_valid),
-        .cfg_ready      (cfg_ready),
+        .cfg_val        (cfg_val),
+        .cfg_rdy        (cfg_rdy),
 
         .axi_aready     (axi_aready),
         .axi_aaddr      (axi_aaddr),
@@ -116,8 +116,8 @@ module axis_addr_tb;
             "\t%d\t%d\t%b\t%b",
             cfg_address,
             cfg_length,
-            cfg_valid,
-            cfg_ready,
+            cfg_val,
+            cfg_rdy,
 
             "\t%d\t%d\t%b\t%b",
             axi_aaddr,
@@ -169,7 +169,7 @@ module axis_addr_tb;
 
         cfg_address = 'b0;
         cfg_length  = 'b0;
-        cfg_valid   = 'b0;
+        cfg_val   = 'b0;
 
         axi_aready  = 'b0;
         //end init
@@ -193,11 +193,11 @@ module axis_addr_tb;
         cfg_address <= 255;
         //cfg_length  <= 8;
         cfg_length  <= 256+256+64;
-        cfg_valid   <= 1'b1;
+        cfg_val   <= 1'b1;
         @(negedge clk);
         cfg_address <= 'b0;
         cfg_length  <= 'b0;
-        cfg_valid   <= 1'b0;
+        cfg_val     <= 1'b0;
         repeat(5) @(negedge clk);
 
 

@@ -11,7 +11,8 @@
  * Author:
  *  Berin Martini (berin.martini@gmail.com)
  */
-`ifndef _axis_ `define _axis_
+`ifndef _axis_
+`define _axis_
 
 
 `include "axis_write.v"
@@ -19,14 +20,15 @@
 
 module axis #(
     parameter
+    BUF_CFG_AWIDTH  = 5,
     BUF_AWIDTH      = 9,
 
-    CONFIG_ID_WR    = 1,
-    CONFIG_ID_RD    = 2,
-    CONFIG_ADDR     = 23,
-    CONFIG_DATA     = 24,
-    CONFIG_AWIDTH   = 5,
-    CONFIG_DWIDTH   = 32,
+    CFG_ID_WR       = 1,
+    CFG_ID_RD       = 2,
+    CFG_ADDR        = 23,
+    CFG_DATA        = 24,
+    CFG_AWIDTH      = 5,
+    CFG_DWIDTH      = 32,
 
     STREAM_WIDTH    = 32,
 
@@ -38,8 +40,8 @@ module axis #(
     input                               rst,
 
     // configuation
-    input       [CONFIG_AWIDTH-1:0]     cfg_addr,
-    input       [CONFIG_DWIDTH-1:0]     cfg_data,
+    input       [CFG_AWIDTH-1:0]        cfg_addr,
+    input       [CFG_DWIDTH-1:0]        cfg_data,
     input                               cfg_valid,
 
     // stream interface
@@ -119,6 +121,24 @@ module axis #(
      * Implementation
      */
 
+    reg  [CFG_AWIDTH-1:0]   cfg_addr_r;
+    reg  [CFG_DWIDTH-1:0]   cfg_data_r;
+    reg                     cfg_valid_r;
+
+
+    // register for improved timing
+    always @(posedge clk)
+        if (rst)    cfg_valid_r <= 1'b0;
+        else        cfg_valid_r <= cfg_valid;
+
+
+    // register for improved timing
+    always @(posedge clk) begin
+        cfg_addr_r <= cfg_addr;
+        cfg_data_r <= cfg_data;
+    end
+
+
     // write path static values
     assign axi_awlock   = 1'h0; // NORMAL_ACCESS
     assign axi_awcache  = 4'h0; // NON_CACHE_NON_BUFFER
@@ -126,8 +146,6 @@ module axis #(
     assign axi_awburst  = 2'h1; // INCREMENTING
     assign axi_awqos    = 4'h0; // NOT_QOS_PARTICIPANT
     assign axi_awsize   = BURST_SIZE;
-    assign axi_awid     = {AXI_ID_WIDTH{1'b0}};
-    assign axi_wid      = {AXI_ID_WIDTH{1'b0}};
     assign axi_wstrb    = {(AXI_DATA_WIDTH/8){1'b1}};
 
     // read path static values
@@ -137,7 +155,6 @@ module axis #(
     assign axi_arburst  = 2'h1; // INCREMENTING
     assign axi_arqos    = 4'h0; // NOT_QOS_PARTICIPANT
     assign axi_arsize   = BURST_SIZE;
-    assign axi_arid     = {AXI_ID_WIDTH{1'b0}};
 
 
     //  assume that all writes are successful and therefore do not need to
@@ -146,14 +163,16 @@ module axis #(
 
 
     axis_write #(
+        .BUF_CFG_AWIDTH (BUF_CFG_AWIDTH),
         .BUF_AWIDTH     (BUF_AWIDTH),
 
-        .CONFIG_ID      (CONFIG_ID_WR),
-        .CONFIG_ADDR    (CONFIG_ADDR),
-        .CONFIG_DATA    (CONFIG_DATA),
-        .CONFIG_AWIDTH  (CONFIG_AWIDTH),
-        .CONFIG_DWIDTH  (CONFIG_DWIDTH),
+        .CFG_ID         (CFG_ID_WR),
+        .CFG_ADDR       (CFG_ADDR),
+        .CFG_DATA       (CFG_DATA),
+        .CFG_AWIDTH     (CFG_AWIDTH),
+        .CFG_DWIDTH     (CFG_DWIDTH),
 
+        .AXI_ID_WIDTH   (AXI_ID_WIDTH),
         .AXI_LEN_WIDTH  (AXI_LEN_WIDTH),
         .AXI_ADDR_WIDTH (AXI_ADDR_WIDTH),
         .AXI_DATA_WIDTH (AXI_DATA_WIDTH),
@@ -162,17 +181,20 @@ module axis #(
         .clk            (clk),
         .rst            (rst),
 
-        .cfg_addr       (cfg_addr),
-        .cfg_data       (cfg_data),
-        .cfg_valid      (cfg_valid),
+        .cfg_addr       (cfg_addr_r),
+        .cfg_data       (cfg_data_r),
+        .cfg_valid      (cfg_valid_r),
+        .cfg_ready      (),
 
-        .axi_awready    (axi_awready),
+        .axi_awid       (axi_awid),
         .axi_awaddr     (axi_awaddr),
         .axi_awlen      (axi_awlen),
         .axi_awvalid    (axi_awvalid),
+        .axi_awready    (axi_awready),
 
-        .axi_wlast      (axi_wlast),
+        .axi_wid        (axi_wid),
         .axi_wdata      (axi_wdata),
+        .axi_wlast      (axi_wlast),
         .axi_wvalid     (axi_wvalid),
         .axi_wready     (axi_wready),
 
@@ -183,14 +205,16 @@ module axis #(
 
 
     axis_read #(
+        .BUF_CFG_AWIDTH (BUF_CFG_AWIDTH),
         .BUF_AWIDTH     (BUF_AWIDTH),
 
-        .CONFIG_ID      (CONFIG_ID_RD),
-        .CONFIG_ADDR    (CONFIG_ADDR),
-        .CONFIG_DATA    (CONFIG_DATA),
-        .CONFIG_AWIDTH  (CONFIG_AWIDTH),
-        .CONFIG_DWIDTH  (CONFIG_DWIDTH),
+        .CFG_ID         (CFG_ID_RD),
+        .CFG_ADDR       (CFG_ADDR),
+        .CFG_DATA       (CFG_DATA),
+        .CFG_AWIDTH     (CFG_AWIDTH),
+        .CFG_DWIDTH     (CFG_DWIDTH),
 
+        .AXI_ID_WIDTH   (AXI_ID_WIDTH),
         .AXI_LEN_WIDTH  (AXI_LEN_WIDTH),
         .AXI_ADDR_WIDTH (AXI_ADDR_WIDTH),
         .AXI_DATA_WIDTH (AXI_DATA_WIDTH),
@@ -199,16 +223,19 @@ module axis #(
         .clk            (clk),
         .rst            (rst),
 
-        .cfg_addr       (cfg_addr),
-        .cfg_data       (cfg_data),
-        .cfg_valid      (cfg_valid),
+        .cfg_addr       (cfg_addr_r),
+        .cfg_data       (cfg_data_r),
+        .cfg_valid      (cfg_valid_r),
+        .cfg_ready      (),
 
-        .axi_arready    (axi_arready),
+        .axi_arid       (axi_arid),
         .axi_araddr     (axi_araddr),
         .axi_arlen      (axi_arlen),
         .axi_arvalid    (axi_arvalid),
+        .axi_arready    (axi_arready),
 
         .axi_rdata      (axi_rdata),
+        .axi_rlast      (axi_rlast),
         .axi_rvalid     (axi_rvalid),
         .axi_rready     (axi_rready),
 

@@ -53,8 +53,7 @@ module axis_read_data_tb;
     localparam STREAM_LENGTH    = (256*8*2)-4;
 
     localparam BUF_AWIDTH       = 4;
-    localparam CONFIG_DWIDTH    = 32;
-    localparam WIDTH_RATIO      = 8;
+    localparam CFG_DWIDTH       = 32;
     localparam AXI_DATA_WIDTH   = 256;
     localparam DATA_WIDTH       = 32;
 
@@ -70,11 +69,12 @@ module axis_read_data_tb;
 
     reg                             rst;
 
-    reg     [CONFIG_DWIDTH-1:0]     cfg_length;
-    reg                             cfg_valid;
-    wire                            cfg_ready;
+    reg     [CFG_DWIDTH-1:0]        cfg_length;
+    reg                             cfg_val;
+    wire                            cfg_rdy;
 
     reg     [AXI_DATA_WIDTH-1:0]    axi_rdata;
+    reg                             axi_rlast;
     reg                             axi_rvalid;
     wire                            axi_rready;
 
@@ -89,8 +89,7 @@ module axis_read_data_tb;
 
     axis_read_data #(
         .BUF_AWIDTH     (BUF_AWIDTH),
-        .CONFIG_DWIDTH  (CONFIG_DWIDTH),
-        .WIDTH_RATIO    (WIDTH_RATIO),
+        .CFG_DWIDTH     (CFG_DWIDTH),
 
         .AXI_DATA_WIDTH (AXI_DATA_WIDTH),
         .DATA_WIDTH     (DATA_WIDTH))
@@ -99,10 +98,11 @@ module axis_read_data_tb;
         .rst            (rst),
 
         .cfg_length     (cfg_length),
-        .cfg_valid      (cfg_valid),
-        .cfg_ready      (cfg_ready),
+        .cfg_val        (cfg_val),
+        .cfg_rdy        (cfg_rdy),
 
         .axi_rdata      (axi_rdata),
+        .axi_rlast      (axi_rlast),
         .axi_rvalid     (axi_rvalid),
         .axi_rready     (axi_rready),
 
@@ -121,13 +121,14 @@ module axis_read_data_tb;
             "%d\t%d",
             $time, rst,
 
-            "\t%d\t%b",
+            "\t%d\t%b\t%b",
             cfg_length,
-            cfg_valid,
-            cfg_ready,
+            cfg_val,
+            cfg_rdy,
 
-            "\t%x\t%b\t%b",
+            "\t%x\t%b\t%b\t%b",
             axi_rdata,
+            axi_rlast,
             axi_rvalid,
             axi_rready,
 
@@ -152,7 +153,8 @@ module axis_read_data_tb;
             "\tc_r",
 
             "\t\t\t\t\t\tr_d",
-            "\t\t\tr_v",
+            "\t\t\t\tr_l",
+            "\tr_v",
             "\tr_r",
 
             "\t\ts_d",
@@ -173,9 +175,10 @@ module axis_read_data_tb;
         rst = 0;
 
         cfg_length  = 'b0;
-        cfg_valid   = 'b0;
+        cfg_val     = 'b0;
 
         axi_rdata   = 'b0;
+        axi_rlast   = 'b0;
         axi_rvalid  = 'b0;
 
         ready       = 'b0;
@@ -198,11 +201,11 @@ module axis_read_data_tb;
 
         repeat(5) @(negedge clk);
         cfg_length  <= 10;
-        cfg_valid   <= 1'b1;
+        cfg_val     <= 1'b1;
         @(negedge clk)
 
         cfg_length  <= 'b0;
-        cfg_valid   <= 1'b0;
+        cfg_val     <= 1'b0;
         repeat(5) @(negedge clk);
 
 
@@ -217,10 +220,12 @@ module axis_read_data_tb;
         axi_rvalid  <= 1'b1;
         @(negedge clk);
         axi_rdata   <= {32'd9, 32'd8, 32'd7, 32'd6, 32'd5, 32'd4, 32'd3, 32'd2};
+        axi_rlast   <= 1'b1;
         while ( ~axi_rready) @(negedge clk);
         axi_rvalid  <= 1'b1;
         @(negedge clk);
         axi_rdata   <= 'b0;
+        axi_rlast   <= 1'b0;
         axi_rvalid  <= 1'b0;
 
         repeat(15) @(negedge clk);

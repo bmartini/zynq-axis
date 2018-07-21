@@ -3,7 +3,7 @@
  *  axis_write
  *
  * Description:
- *  The axis_write takes a system stream an translate it to the axi data
+ *  The axis_write takes a system stream and translates it to the axi data
  *  channel protocol.
  *
  * Test bench:
@@ -15,7 +15,8 @@
  * Author:
  *  Berin Martini (berin.martini@gmail.com)
  */
-`ifndef _axis_write_ `define _axis_write_
+`ifndef _axis_write_
+`define _axis_write_
 
 
 `include "axis_addr.v"
@@ -23,14 +24,16 @@
 
 module axis_write
   #(parameter
+    BUF_CFG_AWIDTH  = 5,
     BUF_AWIDTH      = 9,
 
-    CONFIG_ID       = 1,
-    CONFIG_ADDR     = 23,
-    CONFIG_DATA     = 24,
-    CONFIG_AWIDTH   = 5,
-    CONFIG_DWIDTH   = 32,
+    CFG_ID          = 1,
+    CFG_ADDR        = 23,
+    CFG_DATA        = 24,
+    CFG_AWIDTH      = 5,
+    CFG_DWIDTH      = 32,
 
+    AXI_ID_WIDTH    = 8,
     AXI_LEN_WIDTH   = 8,
     AXI_ADDR_WIDTH  = 32,
     AXI_DATA_WIDTH  = 32,
@@ -38,17 +41,20 @@ module axis_write
    (input                               clk,
     input                               rst,
 
-    input       [CONFIG_AWIDTH-1:0]     cfg_addr,
-    input       [CONFIG_DWIDTH-1:0]     cfg_data,
+    input       [CFG_AWIDTH-1:0]        cfg_addr,
+    input       [CFG_DWIDTH-1:0]        cfg_data,
     input                               cfg_valid,
+    output                              cfg_ready,
 
-    input                               axi_awready,
+    output reg  [AXI_ID_WIDTH-1:0]      axi_awid,
     output      [AXI_ADDR_WIDTH-1:0]    axi_awaddr,
     output      [AXI_LEN_WIDTH-1:0]     axi_awlen,
     output                              axi_awvalid,
+    input                               axi_awready,
 
-    output                              axi_wlast,
+    output reg  [AXI_ID_WIDTH-1:0]      axi_wid,
     output      [AXI_DATA_WIDTH-1:0]    axi_wdata,
+    output                              axi_wlast,
     output                              axi_wvalid,
     input                               axi_wready,
 
@@ -62,14 +68,13 @@ module axis_write
      */
 
     localparam WIDTH_RATIO  = AXI_DATA_WIDTH/DATA_WIDTH;
-    localparam CONFIG_NB    = 2;
-    localparam STORE_WIDTH  = CONFIG_DWIDTH*CONFIG_NB;
+    localparam CFG_NB       = 2;
+    localparam STORE_WIDTH  = CFG_DWIDTH*CFG_NB;
 
     localparam
         C_IDLE      = 0,
         C_CONFIG    = 1,
-        C_WAIT      = 2,
-        C_ENABLE    = 3;
+        C_STALL     = 2;
 
 
 `ifdef VERBOSE
@@ -82,23 +87,19 @@ module axis_write
      */
 
 
-    reg  [3:0]                          c_state;
-    reg  [3:0]                          c_state_nx;
+    reg  [2:0]                          c_state;
+    reg  [2:0]                          c_state_nx;
 
     wire                                cfg_addr_ready;
     wire                                cfg_data_ready;
 
-    reg  [CONFIG_AWIDTH-1:0]            cfg_addr_r;
-    reg  [CONFIG_DWIDTH-1:0]            cfg_data_r;
-    reg                                 cfg_valid_r;
-    wire [STORE_WIDTH+CONFIG_DWIDTH-1:0]    cfg_store_i;
+    wire [STORE_WIDTH+CFG_DWIDTH-1:0]   cfg_store_i;
     reg  [STORE_WIDTH-1:0]              cfg_store;
     reg  [7:0]                          cfg_cnt;
+    wire                                cfg_done;
 
-    wire [CONFIG_DWIDTH-1:0]            start_addr;
-    reg  [CONFIG_DWIDTH-1:0]            cfg_address;
-    wire [CONFIG_DWIDTH-1:0]            str_length;
-    reg  [CONFIG_DWIDTH-1:0]            cfg_length;
+    wire [CFG_DWIDTH-1:0]               cfg_address;
+    wire [CFG_DWIDTH-1:0]               cfg_length;
     reg                                 cfg_enable;
     wire                                id_valid;
     wire                                addressed;
@@ -109,30 +110,21 @@ module axis_write
      * Implementation
      */
 
-    assign cfg_store_i  = {cfg_store, cfg_data_r};
+    assign cfg_store_i  = {cfg_store, cfg_data};
 
-    assign start_addr   = cfg_store[CONFIG_DWIDTH +: CONFIG_DWIDTH];
+    assign cfg_address  = cfg_store[CFG_DWIDTH +: CFG_DWIDTH];
 
-    assign str_length   = cfg_store[0 +: CONFIG_DWIDTH];
+    assign cfg_length   = cfg_store[0 +: CFG_DWIDTH];
 
-    assign id_valid     = (CONFIG_ID == cfg_data_r);
+    assign id_valid     = (CFG_ID == cfg_data);
 
-    assign addressed    = (CONFIG_ADDR == cfg_addr_r) & cfg_valid_r;
+    assign addressed    = (CFG_ADDR == cfg_addr) & cfg_valid;
 
-    assign axis_data    = (CONFIG_DATA == cfg_addr_r) & cfg_valid_r;
+    assign axis_data    = (CFG_DATA == cfg_addr) & cfg_valid;
 
+    assign cfg_ready    = ~c_state[C_STALL];
 
-    // register for improved timing
-    always @(posedge clk)
-        if (rst)    cfg_valid_r <= 1'b0;
-        else        cfg_valid_r <= cfg_valid;
-
-
-    // register for improved timing
-    always @(posedge clk) begin
-        cfg_addr_r <= cfg_addr;
-        cfg_data_r <= cfg_data;
-    end
+    assign cfg_done     = ((CFG_NB-1) == cfg_cnt);
 
 
     always @(posedge clk)
@@ -151,16 +143,28 @@ module axis_write
 
 
     always @(posedge clk)
-        if (rst)    cfg_enable <= 1'b0;
-        else        cfg_enable <= c_state[C_ENABLE];
-
-
-    always @(posedge clk) begin
-        if (c_state[C_ENABLE]) begin
-            cfg_address <= start_addr;
-            cfg_length  <= str_length;
+        if (rst) cfg_enable <= 1'b0;
+        else if ( ~c_state[C_STALL]) begin
+            cfg_enable <= c_state[C_CONFIG] & axis_data & cfg_done;
         end
-    end
+
+
+    always @(posedge clk)
+        if (rst) begin
+            axi_awid <= {AXI_ID_WIDTH{1'b0}};
+        end
+        else if (axi_awvalid && axi_awready) begin
+            axi_awid <= axi_awid + {{(AXI_ID_WIDTH-1){1'b0}}, 1'b1};
+        end
+
+
+    always @(posedge clk)
+        if (rst) begin
+            axi_wid <= {AXI_ID_WIDTH{1'b0}};
+        end
+        else if (axi_wvalid & axi_wready & axi_wlast) begin
+            axi_wid <= axi_wid + {{(AXI_ID_WIDTH-1){1'b0}}, 1'b1};
+        end
 
 
     always @(posedge clk)
@@ -182,19 +186,19 @@ module axis_write
                 else c_state_nx[C_IDLE] = 1'b1;
             end
             c_state[C_CONFIG] : begin
-                if (axis_data & ((CONFIG_NB-1) <= cfg_cnt)) begin
-                    c_state_nx[C_WAIT] = 1'b1;
+                if  (axis_data & cfg_done & cfg_addr_ready & cfg_data_ready) begin
+                    c_state_nx[C_IDLE] = 1'b1;
+                end
+                else if (axis_data & cfg_done) begin
+                    c_state_nx[C_STALL] = 1'b1;
                 end
                 else c_state_nx[C_CONFIG] = 1'b1;
             end
-            c_state[C_WAIT] : begin
+            c_state[C_STALL] : begin
                 if (cfg_addr_ready & cfg_data_ready) begin
-                    c_state_nx[C_ENABLE] = 1'b1;
+                    c_state_nx[C_IDLE] = 1'b1;
                 end
-                else c_state_nx[C_WAIT] = 1'b1;
-            end
-            c_state[C_ENABLE] : begin
-                c_state_nx[C_IDLE] = 1'b1;
+                else c_state_nx[C_STALL] = 1'b1;
             end
             default : begin
                 c_state_nx[C_IDLE] = 1'b1;
@@ -204,9 +208,11 @@ module axis_write
 
 
     axis_addr #(
-        .CONFIG_DWIDTH  (CONFIG_DWIDTH),
+        .BUF_CFG_AWIDTH (BUF_CFG_AWIDTH),
+        .CFG_DWIDTH     (CFG_DWIDTH),
         .WIDTH_RATIO    (WIDTH_RATIO),
         .CONVERT_SHIFT  ($clog2(WIDTH_RATIO)),
+
         .AXI_LEN_WIDTH  (AXI_LEN_WIDTH),
         .AXI_ADDR_WIDTH (AXI_ADDR_WIDTH),
         .AXI_DATA_WIDTH (AXI_DATA_WIDTH))
@@ -216,8 +222,8 @@ module axis_write
 
         .cfg_address    (cfg_address),
         .cfg_length     (cfg_length),
-        .cfg_valid      (cfg_enable),
-        .cfg_ready      (cfg_addr_ready),
+        .cfg_val        (cfg_enable & ~c_state[C_STALL]),
+        .cfg_rdy        (cfg_addr_ready),
 
         .axi_aready     (axi_awready),
         .axi_aaddr      (axi_awaddr),
@@ -227,10 +233,11 @@ module axis_write
 
 
     axis_write_data #(
+        .BUF_CFG_AWIDTH (BUF_CFG_AWIDTH),
         .BUF_AWIDTH     (BUF_AWIDTH),
-        .CONFIG_DWIDTH  (CONFIG_DWIDTH),
-        .WIDTH_RATIO    (WIDTH_RATIO),
+        .CFG_DWIDTH     (CFG_DWIDTH),
         .CONVERT_SHIFT  ($clog2(WIDTH_RATIO)),
+
         .AXI_LEN_WIDTH  (AXI_LEN_WIDTH),
         .AXI_DATA_WIDTH (AXI_DATA_WIDTH),
         .DATA_WIDTH     (DATA_WIDTH))
@@ -239,8 +246,8 @@ module axis_write
         .rst            (rst),
 
         .cfg_length     (cfg_length),
-        .cfg_valid      (cfg_enable),
-        .cfg_ready      (cfg_data_ready),
+        .cfg_val        (cfg_enable & ~c_state[C_STALL]),
+        .cfg_rdy        (cfg_data_ready),
 
         .axi_wlast      (axi_wlast),
         .axi_wdata      (axi_wdata),

@@ -53,7 +53,7 @@ module axis_write_data_tb;
     localparam STREAM_LENGTH    = (256*8*2)-4;
 
     localparam BUF_AWIDTH       = 4;
-    localparam CONFIG_DWIDTH    = 32;
+    localparam CFG_DWIDTH       = 32;
 
     localparam AXI_LEN_WIDTH    = 4;
     localparam AXI_DATA_WIDTH   = 64;
@@ -73,11 +73,9 @@ module axis_write_data_tb;
 
     reg                             rst;
 
-    wire                            done;
-
-    reg     [CONFIG_DWIDTH-1:0]     cfg_length;
-    reg                             cfg_valid;
-    wire                            cfg_ready;
+    reg     [CFG_DWIDTH-1:0]        cfg_length;
+    reg                             cfg_val;
+    wire                            cfg_rdy;
 
     wire                            axi_wlast;
     wire    [AXI_DATA_WIDTH-1:0]    axi_wdata;
@@ -95,8 +93,7 @@ module axis_write_data_tb;
 
     axis_write_data #(
         .BUF_AWIDTH     (BUF_AWIDTH),
-        .CONFIG_DWIDTH  (CONFIG_DWIDTH),
-        .WIDTH_RATIO    (WIDTH_RATIO),
+        .CFG_DWIDTH     (CFG_DWIDTH),
         .CONVERT_SHIFT  ($clog2(WIDTH_RATIO)),
 
         .AXI_LEN_WIDTH  (AXI_LEN_WIDTH),
@@ -107,8 +104,8 @@ module axis_write_data_tb;
         .rst            (rst),
 
         .cfg_length     (cfg_length),
-        .cfg_valid      (cfg_valid),
-        .cfg_ready      (cfg_ready),
+        .cfg_val        (cfg_val),
+        .cfg_rdy        (cfg_rdy),
 
         .axi_wlast      (axi_wlast),
         .axi_wdata      (axi_wdata),
@@ -132,8 +129,8 @@ module axis_write_data_tb;
 
             "\t%d\t%b\t%b",
             cfg_length,
-            cfg_valid,
-            cfg_ready,
+            cfg_val,
+            cfg_rdy,
 
             "\t%x\t%b\t%b\t%b",
             axi_wdata,
@@ -148,6 +145,9 @@ module axis_write_data_tb;
 
             "\t%b",
             uut.state,
+
+            "\t%d",
+            uut.str_cnt,
 
         );
 
@@ -184,7 +184,7 @@ module axis_write_data_tb;
         rst = 0;
 
         cfg_length  = 'b0;
-        cfg_valid   = 'b0;
+        cfg_val     = 'b0;
 
         axi_wready  = 'b0;
         data        = 'b0;
@@ -208,11 +208,11 @@ module axis_write_data_tb;
 
         repeat(5) @(negedge clk);
         cfg_length  <= 8;
-        cfg_valid   <= 1'b1;
+        cfg_val     <= 1'b1;
         @(negedge clk)
 
         cfg_length  <= 'b0;
-        cfg_valid   <= 1'b0;
+        cfg_val     <= 1'b0;
         repeat(5) @(negedge clk);
 
 
@@ -285,11 +285,11 @@ module axis_write_data_tb;
 
         repeat(5) @(negedge clk);
         cfg_length  <= 8;
-        cfg_valid   <= 1'b1;
+        cfg_val     <= 1'b1;
         @(negedge clk)
 
         cfg_length  <= 'b0;
-        cfg_valid   <= 1'b0;
+        cfg_val     <= 1'b0;
         repeat(5) @(negedge clk);
 
 
@@ -337,11 +337,19 @@ module axis_write_data_tb;
 
         repeat(5) @(negedge clk);
         cfg_length  <= STREAM_LENGTH;
-        cfg_valid   <= 1'b1;
+        cfg_val     <= 1'b1;
+        @(negedge clk)
+
+        cfg_length  <= 1;
+        cfg_val     <= 1'b1;
+        @(negedge clk)
+
+        cfg_length  <= 1;
+        cfg_val     <= 1'b1;
         @(negedge clk)
 
         cfg_length  <= 'b0;
-        cfg_valid   <= 1'b0;
+        cfg_val     <= 1'b0;
         repeat(5) @(negedge clk);
 
 
@@ -355,7 +363,7 @@ module axis_write_data_tb;
         axi_wready  <= 1'b1;
         repeat(15) @(negedge clk);
 
-        repeat (STREAM_LENGTH) begin
+        repeat (STREAM_LENGTH+1) begin
             data    <= data + 1;
             valid   <= 1'b1;
             @(negedge clk);
@@ -363,6 +371,11 @@ module axis_write_data_tb;
         valid       <= 1'b0;
 
 
+        repeat(15) @(negedge clk);
+        data    <= data + 1;
+        valid   <= 1'b1;
+        @(negedge clk);
+        valid       <= 1'b0;
         repeat(15) @(negedge clk);
         axi_wready  <= 1'b0;
 
